@@ -1,10 +1,31 @@
-<?php require_once __DIR__ . '/conexao.php'; ?>
+<?php 
+require_once __DIR__ . '/conexao.php'; 
+
+// ===== USUÁRIO ADMINISTRADOR PADRÃO (criado só se ainda não existir) =====
+$stmt = $pdo->query("SELECT COUNT(*) FROM usuarios WHERE nivel = 'Administrador'");
+if ($stmt->fetchColumn() == 0) {
+    $senha_hash = password_hash($senha_padrao, PASSWORD_DEFAULT);
+    $ins = $pdo->prepare("
+        INSERT INTO usuarios (nome, email, senha, nivel, ativo, empresa)
+        VALUES (:nome, :email, :senha, 'Administrador', :ativo, :empresa)
+    ");
+    $ins->execute([
+        ':nome'   => 'Administrador',
+        ':email'  => $email_sistema,
+        ':senha'  => $senha_hash,
+        ':ativo'  => '1',
+        ':empresa'=> $id_empresa,
+    ]);
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - <?php echo htmlspecialchars($sistema_nome); ?></title>
+    <title>Login - <?php echo htmlspecialchars($nome_sistema); ?></title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <!-- Cores do tema (variáveis do sistema) -->

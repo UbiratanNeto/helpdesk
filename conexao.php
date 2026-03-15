@@ -28,6 +28,9 @@ try {
     die('Erro ao conectar ao banco de dados: ' . $e->getMessage());
 }
 
+// ===== SENHA PADRÃO (usada ao criar novos usuários no sistema) =====
+$senha_padrao = '123';
+
 // ===== INFORMAÇÕES DO SISTEMA =====
 $nome_sistema = 'Sistema Helpdesk';
 $telefone_sistema = '(31)97527-5084';
@@ -70,5 +73,7 @@ if ($config) {
     $cor_secundaria  = $config['cor_secundaria'] ?? $cor_secundaria;
     $id_empresa      = (int) ($config['empresa'] ?? $id_empresa);
 }
+
+
 
 ?>
