@@ -19,7 +19,7 @@ require_once __DIR__ . '/conexao.php';
 <body>
     <div class="container py-4">
         <p class="mb-1">Olá, <strong><?php echo htmlspecialchars($_SESSION['usuario_nome']); ?></strong> (<?php echo htmlspecialchars($_SESSION['usuario_nivel']); ?>).</p>
-        <a href="sair.php" class="btn btn-outline-secondary">Sair</a>
+        <a href="logout.php" class="btn btn-outline-secondary">Sair</a>
     </div>
 </body>
 </html>
