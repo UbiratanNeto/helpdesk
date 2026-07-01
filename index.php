@@ -46,8 +46,10 @@ if ($stmt->fetchColumn() == 0) {
     <style>
     :root {
         --helpdesk-primary: <?php echo $cor_primaria; ?>;
-        --helpdesk-primary-dark: <?php echo $cor_primaria; ?>;
+        --helpdesk-primary-dark: <?php echo $cor_secundaria; ?>;
+        --helpdesk-secondary: <?php echo $cor_secundaria; ?>;
         --helpdesk-bg: <?php echo $cor_fundo; ?>;
+        --helpdesk-gradient: linear-gradient(135deg, <?php echo $cor_primaria; ?> 0%, <?php echo $cor_secundaria; ?> 100%);
     }
     </style>
     <?php if ($loginMensagem !== null): ?>
@@ -60,42 +62,118 @@ if ($stmt->fetchColumn() == 0) {
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- CSS personalizado -->
-    <link rel="stylesheet" href="assets/css/login.css">
+    <link rel="stylesheet" href="css/helpdesk-ui.css">
+    <link rel="stylesheet" href="css/login.css">
 </head>
 <body>
     <div class="login-container">
-        <div class="login-box card shadow">
-            <div class="card-body">
-                <div class="login-header">
-                    <h1 class="mb-1"><?php echo htmlspecialchars($nome_sistema); ?></h1>
-                    <p>Faça login para acessar o sistema</p>
+        <div class="hd-card login-card">
+            <div class="hd-card__header">
+                <div class="hd-card__brand">
+                    <div class="hd-card__icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2Zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2ZM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="hd-card__title"><?php echo htmlspecialchars($nome_sistema); ?></h1>
+                        <p class="hd-card__subtitle">Acesse sua conta</p>
+                    </div>
                 </div>
+            </div>
 
+            <div class="hd-card__body">
                 <form class="login-form" action="autenticar.php" method="POST">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token_login']); ?>">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">E-mail</label>
-                        <input type="email" class="form-control" id="username" name="username" placeholder="Digite seu e-mail" maxlength="100" required autocomplete="username">
-                    </div>
 
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Senha</label>
-                        <input type="password" class="form-control" id="password" name="password" placeholder="Digite sua senha" maxlength="255" required autocomplete="current-password">
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="remember" name="remember">
-                            <label class="form-check-label" for="remember">Lembrar-me</label>
+                    <div class="hd-field">
+                        <label for="username" class="hd-field__label">E-mail</label>
+                        <div class="hd-field__wrap">
+                            <span class="hd-field__icon" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/>
+                                </svg>
+                            </span>
+                            <input type="email" class="hd-field__input" id="username" name="username" placeholder="Digite seu e-mail" maxlength="100" required autocomplete="username">
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-login">Entrar</button>
-
-                    <div class="login-footer">
-                        <a href="forgot-password.php" class="forgot-password">Esqueceu sua senha?</a>
+                    <div class="hd-field">
+                        <label for="password" class="hd-field__label">Senha</label>
+                        <div class="hd-field__wrap">
+                            <span class="hd-field__icon" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2Zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
+                                </svg>
+                            </span>
+                            <input type="password" class="hd-field__input" id="password" name="password" placeholder="Digite sua senha" maxlength="255" required autocomplete="current-password">
+                        </div>
                     </div>
+
+                    <div class="hd-check">
+                        <input class="hd-check__input" type="checkbox" id="remember" name="remember">
+                        <label class="hd-check__label" for="remember">Salvar acesso</label>
+                    </div>
+
+                    <button type="submit" class="hd-btn hd-btn--primary">Entrar</button>
                 </form>
+            </div>
+
+            <div class="hd-card__footer hd-card__footer--center">
+                <button type="button" class="hd-link" data-bs-toggle="modal" data-bs-target="#modalRecuperarSenha">
+                    Esqueceu sua senha?
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: recuperação de senha -->
+    <div class="modal fade hd-modal" id="modalRecuperarSenha" tabindex="-1" aria-labelledby="modalRecuperarSenhaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered hd-modal-dialog">
+            <div class="modal-content hd-card p-0" style="border: none; overflow: hidden;">
+                
+                <div class="hd-card__header hd-card__header--row">
+                    <div class="hd-card__brand">
+                        <div class="hd-card__icon" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="hd-card__title" id="modalRecuperarSenhaLabel">Recuperar senha</h2>
+                            <p class="hd-card__subtitle">Enviaremos as instruções por e-mail</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close hd-modal__close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+
+                <div class="hd-card__body">
+                    <form id="formRecuperarSenha" novalidate>
+                        <div class="hd-field">
+                            <label for="emailRecuperar" class="hd-field__label">E-mail</label>
+                            <div class="hd-field__wrap">
+                                <span class="hd-field__icon" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/>
+                                    </svg>
+                                </span>
+                                <input type="email" class="hd-field__input" id="emailRecuperar" name="email" placeholder="Digite seu e-mail" maxlength="100" required autocomplete="email" style="padding-left: 2.65rem;">
+                            </div>
+                            <p class="hd-field__hint">Verifique também a caixa de spam.</p>
+                        </div>
+
+                        <button type="button" class="hd-btn hd-btn--primary mb-2" id="btnEnviarRecuperacao">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" style="margin-right: 0.55rem; display: inline-block; vertical-align: text-bottom;">
+                                <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-4.178-6.431-6.431-4.179a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.036 9.434l4.418 2.909-2.604-6.631L6.036 9.434Z"/>
+                            </svg>
+                            Enviar instruções
+                        </button>
+                    </form>
+                </div>
+
+                <div class="hd-card__footer" style="padding-top: 0.5rem;">
+                    <button type="button" class="hd-btn hd-btn--ghost" data-bs-dismiss="modal">Fechar</button>
+                </div>
             </div>
         </div>
     </div>
@@ -105,15 +183,18 @@ if ($stmt->fetchColumn() == 0) {
     <!-- Flatpickr (datas - uso em formulários do sistema) -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
-    <script src="assets/js/flatpickr-config.js"></script>
+    <script src="js/flatpickr-config.js"></script>
     <!-- Mensagens (SweetAlert2) e tratamento de erro no login -->
-    <script src="assets/js/mensagens.js"></script>
-
+    <script src="js/mensagens.js"></script>
     <script>
+        window.LOGIN_MODO_TESTE = <?php echo json_encode($modo_teste, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+        window.LOGIN_USUARIO_TESTE = <?php echo json_encode($usuario_teste, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+        window.LOGIN_SENHA_TESTE = <?php echo json_encode($senha_teste, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
         window.LOGIN_FLASH = <?php echo json_encode($_SESSION['flash'] ?? null);
         unset($_SESSION['flash']); //IMPORTANTE: Limpa a mensagem da sessão após usar
         ?>;
     </script>
+    <script src="js/login.js"></script>
 
 
 </body>
