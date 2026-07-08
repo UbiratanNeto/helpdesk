@@ -178,13 +178,12 @@ if ($stmt->fetchColumn() == 0) {
         </div>
     </div>
 
-    <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    <!-- Flatpickr (datas - uso em formulários do sistema) -->
+    
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
     <script src="js/flatpickr-config.js"></script>
-    <!-- Mensagens (SweetAlert2) e tratamento de erro no login -->
+    
     <script src="js/mensagens.js"></script>
     <script>
         window.LOGIN_MODO_TESTE = <?php echo json_encode($modo_teste, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
@@ -195,7 +194,7 @@ if ($stmt->fetchColumn() == 0) {
         ?>;
     </script>
     <script src="js/login.js"></script>
-
-
+    
+    <script src="js/scripts.js"></script>
 </body>
 </html>
