@@ -1,5 +1,6 @@
 /**
- * Login: salvar acesso (localStorage) e preenchimento automático em modo teste
+ * Login: salvar acesso (localStorage), preenchimento automático em modo teste
+ * e disparo assíncrono para recuperação de senha.
  */
 (function () {
   const STORAGE_KEY = 'helpdesk_login_salvo';
@@ -24,126 +25,130 @@
     localStorage.removeItem(STORAGE_KEY);
   }
 
+  // Centraliza todas as manipulações do DOM em um único evento de carregamento
   document.addEventListener('DOMContentLoaded', function () {
-    const form = document.querySelector('.login-form');
+    
+    // === ELEMENTOS DO LOGIN ===
+    const formLogin = document.querySelector('.login-form');
     const usernameEl = document.getElementById('username');
     const passwordEl = document.getElementById('password');
     const rememberEl = document.getElementById('remember');
 
-    if (!form || !usernameEl || !passwordEl || !rememberEl) return;
+    // === ELEMENTOS DA RECUPERAÇÃO ===
+    const modalRecuperar = document.getElementById('modalRecuperarSenha');
+    const formRecuperar = document.getElementById('formRecuperarSenha');
+    const inputEmail = document.getElementById('emailRecuperar');
+    const btnEnviar = document.getElementById('btnEnviarRecuperacao');
 
-    const salvo = lerSalvo();
+    // Lógica de Autopreenchimento / Modo Teste
+    if (formLogin && usernameEl && passwordEl && rememberEl) {
+      const salvo = lerSalvo();
 
-    if (salvo) {
-      usernameEl.value = salvo.email;
-      passwordEl.value = salvo.senha || '';
-      rememberEl.checked = true;
-    } else if (window.LOGIN_MODO_TESTE === 'Sim') {
-      usernameEl.value = window.LOGIN_USUARIO_TESTE || '';
-      passwordEl.value = window.LOGIN_SENHA_TESTE || '';
+      if (salvo) {
+        usernameEl.value = salvo.email;
+        passwordEl.value = salvo.senha || '';
+        rememberEl.checked = true;
+      } else if (window.LOGIN_MODO_TESTE === 'Sim') {
+        usernameEl.value = window.LOGIN_USUARIO_TESTE || '';
+        passwordEl.value = window.LOGIN_SENHA_TESTE || '';
+      }
+
+      formLogin.addEventListener('submit', function () {
+        if (rememberEl.checked) {
+          salvarAcesso(usernameEl.value.trim(), passwordEl.value);
+        } else {
+          limparSalvo();
+        }
+      });
     }
 
-    form.addEventListener('submit', function () {
-      if (rememberEl.checked) {
-        salvarAcesso(usernameEl.value.trim(), passwordEl.value);
-      } else {
-        limparSalvo();
-      }
-    });
-
-    const modalRecuperar = document.getElementById('modalRecuperarSenha');
-    const emailRecuperar = document.getElementById('emailRecuperar');
-
-    if (modalRecuperar && emailRecuperar) {
+    // Comportamentos visuais da Modal Bootstrap
+    if (modalRecuperar && inputEmail) {
       modalRecuperar.addEventListener('shown.bs.modal', function () {
-        emailRecuperar.focus();
+        inputEmail.focus();
       });
 
       modalRecuperar.addEventListener('hidden.bs.modal', function () {
-        const formRecuperar = document.getElementById('formRecuperarSenha');
         if (formRecuperar) formRecuperar.reset();
       });
     }
-  });
 
-  document.addEventListener('DOMContentLoaded', function () {
-    const btnEnviar = document.getElementById('btnEnviarRecuperacao');
-    const formRecuperar = document.getElementById('formRecuperarSenha');
-    const inputEmail = document.getElementById('emailRecuperar');
+    // Envio do formulário de recuperação via AJAX (Fetch API)
+    if (btnEnviar && formRecuperar && inputEmail) {
+      btnEnviar.addEventListener('click', function (e) {
+        e.preventDefault();
 
-    if (btnEnviar) {
-        btnEnviar.addEventListener('click', function (e) {
-            e.preventDefault();
+        const emailValue = inputEmail.value.trim();
 
-            const emailValue = inputEmail.value.trim();
+        if (emailValue === '') {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Atenção',
+            text: 'Por favor, preencha o campo de e-mail.',
+            confirmButtonColor: 'var(--helpdesk-primary)'
+          });
+          return;
+        }
 
-            // Validação básica antes de enviar
-            if (emailValue === '') {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Atenção',
-                    text: 'Por favor, preencha o campo de e-mail.',
-                    confirmButtonColor: 'var(--helpdesk-primary)'
-                });
-                return;
-            }
+        // Previne múltiplos cliques desativando o botão temporariamente
+        btnEnviar.disabled = true;
+        const textoOriginal = btnEnviar.innerHTML;
+        btnEnviar.innerHTML = 'Enviando...';
 
-            // Desativa o botão e muda o texto para evitar duplo clique
-            btnEnviar.disabled = true;
-            const textoOriginal = btnEnviar.innerHTML;
-            btnEnviar.innerHTML = 'Enviando...';
+        const formData = new FormData();
+        formData.append('email', emailValue);
 
-            // Monta os dados do formulário
-            const formData = new FormData();
-            formData.append('email', emailValue);
-
-            // Dispara a requisição assíncrona para o PHP
-            fetch('scripts/recuperar-senha.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Sucesso!',
-                        text: data.message,
-                        confirmButtonColor: 'var(--helpdesk-primary)'
-                    }).then(() => {
-                        // Limpa o formulário e fecha a modal utilizando o método do Bootstrap
-                        formRecuperar.reset();
-                        const modalElement = document.getElementById('modalRecuperarSenha');
-                        const modalInstance = bootstrap.Modal.getInstance(modalElement);
-                        if (modalInstance) {
-                            modalInstance.hide();
-                        }
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erro',
-                        text: data.message,
-                        confirmButtonColor: 'var(--helpdesk-primary)'
-                    });
+        // Rota corrigida apontando para a pasta scripts/
+        fetch('scripts/recuperar-senha.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Erro na resposta do servidor');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Sucesso!',
+              text: data.message,
+              confirmButtonColor: 'var(--helpdesk-primary)'
+            }).then(() => {
+              formRecuperar.reset();
+              if (modalRecuperar) {
+                const modalInstance = bootstrap.Modal.getInstance(modalRecuperar);
+                if (modalInstance) {
+                  modalInstance.hide();
                 }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro no Sistema',
-                    text: 'Não foi possível processar a requisição no momento.',
-                    confirmButtonColor: 'var(--helpdesk-primary)'
-                });
-            })
-            .finally(() => {
-                // Restaura o botão após o término do processo
-                btnEnviar.disabled = false;
-                btnEnviar.innerHTML = textoOriginal;
+              }
             });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Erro',
+              text: data.message,
+              confirmButtonColor: 'var(--helpdesk-primary)'
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Erro:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Erro no Sistema',
+            text: 'Não foi possível processar a requisição no momento.',
+            confirmButtonColor: 'var(--helpdesk-primary)'
+          });
+        })
+        .finally(() => {
+          // Devolve o estado original do botão
+          btnEnviar.disabled = false;
+          btnEnviar.innerHTML = textoOriginal;
         });
+      });
     }
-});
-
+  });
 })();
