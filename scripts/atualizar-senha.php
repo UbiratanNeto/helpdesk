@@ -2,6 +2,9 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+// Força o fuso horário para bater exatamente com o que gravamos no banco
+date_default_timezone_set('Europe/Lisbon');
+
 // Sobe um nível para achar a conexão na raiz
 require_once __DIR__ . '/../conexao.php'; 
 
@@ -16,13 +19,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // 1. Validar se o token existe, não foi usado e não expirou
+    $token = trim($token);
+    $data_atual = date('Y-m-d H:i:s'); // Gera a data/hora atual com base no fuso horário do PHP
+
+    // 1. Validar usando a hora atual gerada pelo PHP para evitar conflito de timezone com o banco
     $stmt = $pdo->prepare("
         SELECT id, usuario_id FROM recuperacao_senha 
-        WHERE token = :token AND usado = 0 AND expira_em > NOW() 
+        WHERE token = :token 
+          AND usado = 0 
+          AND expira_em > :data_atual 
         LIMIT 1
     ");
-    $stmt->execute([':token' => $token]);
+    $stmt->execute([
+        ':token'      => $token,
+        ':data_atual' => $data_atual
+    ]);
     $pedido = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$pedido) {
@@ -49,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $pdo->commit();
 
-        echo json_encode(['success' => true, 'message' => 'Senha atualizada com sucesso! Você já pode entrar do sistema.']);
+        echo json_encode(['success' => true, 'message' => 'Senha atualizada com sucesso! Você já pode entrar no sistema.']);
     } catch (Exception $e) {
         $pdo->rollBack();
         echo json_encode(['success' => false, 'message' => 'Erro ao atualizar a senha. Tente novamente.']);
