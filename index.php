@@ -4,6 +4,10 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 require_once __DIR__ . '/conexao.php';
 
+// Chamar o script de limpeza de forma assíncrona (sem travar a tela do usuário)
+// Usamos file_get_contents ou uma requisição curl simples:
+@file_get_contents("http://" . $_SERVER['HTTP_HOST'] . "/helpdesk/scripts/limpar_tokens_expirados.php");
+
 // Token CSRF para o formulário de login
 if (empty($_SESSION['csrf_token_login'])) {
     $_SESSION['csrf_token_login'] = bin2hex(random_bytes(32));
