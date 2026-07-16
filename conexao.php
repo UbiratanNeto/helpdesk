@@ -6,8 +6,8 @@
 
 $modo_teste = 'Não';
 
-// ===== FUSO HORÁRIO (BRASÍLIA) =====
-date_default_timezone_set('America/Sao_Paulo');
+// ===== FUSO HORÁRIO (LISBOA) =====
+date_default_timezone_set('Europe/Lisbon'); // Ajuste para o fuso horário de Lisboa, Portugal
 
 // ===== CONFIGURAÇÃO DO BANCO (XAMPP) =====
 // No XAMPP, o servidor padrão sempre será localhost ou 127.0.0.1
@@ -42,19 +42,21 @@ $telefone_sistema = '(31)97527-5084';
 $email_sistema = 'contato@hugocursos.com.br';
 $id_empresa = 0;
 
-// ===== CORES DO TEMA =====
-$cor_primaria = '#667eea';
-$cor_secundaria = '#764ba2';
-$cor_fundo = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+// ==========================================================================
+// 🎨 CORES DO TEMA (Fallback padrão caso não exista configuração salva)
+// ==========================================================================
+$cor_primaria   = '#4f46e5'; // Roxo Indigo do curso do Hugo
+$cor_secundaria = '#818cf8'; // Roxo Claro do curso do Hugo
+$cor_fundo      = '#f8fafc'; // Cor sólida limpa (evita quebra de CSS ao injetar variável de cor no background)
 
-// ===== CARREGAR CONFIG DO BANCO =====
-// XAMPP OBS: Certifique-se de que a tabela 'config' já existe no seu banco de dados
+// ===== CARREGAR E SINCRONIZAR CONFIGURAÇÃO =====
 try {
-    // Carregar config da tabela (empresa = 0). Se não existir registro, insere o primeiro.
+    // Busca a configuração existente para a empresa 0
     $stmt = $pdo->query("SELECT * FROM config WHERE empresa = 0 LIMIT 1");
     $config = $stmt->fetch();
 
     if (!$config) {
+        // Se não existir, cria o primeiro registro com as cores definidas acima
         $stmt = $pdo->prepare("
             INSERT INTO config (nome_sistema, telefone_sistema, email_sistema, cor_primaria, cor_secundaria, empresa)
             VALUES (:nome_sistema, :telefone_sistema, :email_sistema, :cor_primaria, :cor_secundaria, :empresa)
@@ -68,14 +70,30 @@ try {
             ':empresa'          => $id_empresa,
         ]);
     } else {
+        // Se já existir, mas as cores estáticas no PHP forem diferentes das do Banco, nós atualizamos o banco!
+        if ($config['cor_primaria'] !== $cor_primaria || $config['cor_secundaria'] !== $cor_secundaria) {
+            $stmt = $pdo->prepare("
+                UPDATE config 
+                SET cor_primaria = :cor_primaria, cor_secundaria = :cor_secundaria 
+                WHERE empresa = 0
+            ");
+            $stmt->execute([
+                ':cor_primaria'   => $cor_primaria,
+                ':cor_secundaria' => $cor_secundaria
+            ]);
+        } else {
+            // AJUSTE CRÍTICO: Se já existem cores no banco, garante que as variáveis PHP do tema usem as cores do Banco de Dados!
+            $cor_primaria   = $config['cor_primaria'] ?? $cor_primaria;
+            $cor_secundaria = $config['cor_secundaria'] ?? $cor_secundaria;
+        }
+        
+        // Carrega as demais informações salvas no banco
         $nome_sistema     = $config['nome_sistema'] ?? $nome_sistema;
         $telefone_sistema = $config['telefone_sistema'] ?? $telefone_sistema;
         $email_sistema    = $config['email_sistema'] ?? $email_sistema;
-        $cor_primaria     = $config['cor_primaria'] ?? $cor_primaria;
-        $cor_secundaria   = $config['cor_secundaria'] ?? $cor_secundaria;
         $id_empresa       = (int) ($config['empresa'] ?? $id_empresa);
     }
 } catch (PDOException $e) {
-    // Se a tabela 'config' não existir ainda, o PHP ignora o erro e carrega os dados padrão acima
+    // Se a tabela 'config' não existir ainda, ignora e usa as variáveis padrão do PHP
 }
 ?>
