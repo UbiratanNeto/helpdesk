@@ -5,7 +5,6 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/conexao.php';
 
 // Chamar o script de limpeza de forma assíncrona (sem travar a tela do usuário)
-// Usamos file_get_contents ou uma requisição curl simples:
 @file_get_contents("http://" . $_SERVER['HTTP_HOST'] . "/helpdesk/scripts/limpar_tokens_expirados.php");
 
 // Token CSRF para o formulário de login
@@ -36,6 +35,10 @@ if ($stmt->fetchColumn() == 0) {
     ]);
 }
 
+// Definição de cores de segurança (fallback) se não existirem no banco
+$primary = (!empty($cor_primaria)) ? $cor_primaria : '#4f46e5';
+$secondary = (!empty($cor_secundaria)) ? $cor_secundaria : '#818cf8';
+$bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
 ?>
 
 <!DOCTYPE html>
@@ -43,31 +46,34 @@ if ($stmt->fetchColumn() == 0) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - <?php echo htmlspecialchars($nome_sistema); ?></title>
+    <title>Login - <?php echo htmlspecialchars($nome_sistema ?? 'Helpdesk'); ?></title>
+    
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <!-- Cores do tema (variáveis do sistema) -->
+    
+    <!-- O seu arquivo ÚNICO de estilos (Localizado na raiz css/) -->
+    <link rel="stylesheet" href="css/main.css">
+
+    <!-- PONTE DE COMUNICAÇÃO: Passa os valores de cor salvos no banco para o seu CSS unificado -->
     <style>
     :root {
-        --helpdesk-primary: <?php echo $cor_primaria; ?>;
-        --helpdesk-primary-dark: <?php echo $cor_secundaria; ?>;
-        --helpdesk-secondary: <?php echo $cor_secundaria; ?>;
-        --helpdesk-bg: <?php echo $cor_fundo; ?>;
-        --helpdesk-gradient: linear-gradient(135deg, <?php echo $cor_primaria; ?> 0%, <?php echo $cor_secundaria; ?> 100%);
+        --cor-primaria: <?php echo $primary; ?>;
+        --cor-secundaria: <?php echo $secondary; ?>;
+        --helpdesk-bg: <?php echo $bg_color; ?>;
     }
     </style>
+
     <?php if ($loginMensagem !== null): ?>
     <script>
         window.LOGIN_MENSAGEM = <?php echo json_encode($loginMensagem, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
     </script>
     <?php endif; ?>
+    
     <!-- Flatpickr (datas) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- CSS personalizado -->
-    <link rel="stylesheet" href="css/helpdesk-ui.css">
-    <link rel="stylesheet" href="css/login.css">
 </head>
 <body>
     <div class="login-container">
@@ -80,7 +86,7 @@ if ($stmt->fetchColumn() == 0) {
                         </svg>
                     </div>
                     <div>
-                        <h1 class="hd-card__title"><?php echo htmlspecialchars($nome_sistema); ?></h1>
+                        <h1 class="hd-card__title"><?php echo htmlspecialchars($nome_sistema ?? 'Helpdesk'); ?></h1>
                         <p class="hd-card__subtitle">Acesse sua conta</p>
                     </div>
                 </div>
@@ -182,6 +188,7 @@ if ($stmt->fetchColumn() == 0) {
         </div>
     </div>
 
+    <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -190,15 +197,14 @@ if ($stmt->fetchColumn() == 0) {
     
     <script src="js/mensagens.js"></script>
     <script>
-        window.LOGIN_MODO_TESTE = <?php echo json_encode($modo_teste, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
-        window.LOGIN_USUARIO_TESTE = <?php echo json_encode($usuario_teste, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
-        window.LOGIN_SENHA_TESTE = <?php echo json_encode($senha_teste, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+        window.LOGIN_MODO_TESTE = <?php echo json_encode($modo_teste ?? false, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+        window.LOGIN_USUARIO_TESTE = <?php echo json_encode($usuario_teste ?? '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+        window.LOGIN_SENHA_TESTE = <?php echo json_encode($senha_teste ?? '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
         window.LOGIN_FLASH = <?php echo json_encode($_SESSION['flash'] ?? null);
-        unset($_SESSION['flash']); //IMPORTANTE: Limpa a mensagem da sessão após usar
+        unset($_SESSION['flash']); 
         ?>;
     </script>
     <script src="js/login.js"></script>
-    
     <script src="js/scripts.js"></script>
 </body>
 </html>

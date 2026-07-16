@@ -45,21 +45,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':expira_em'  => $expira_em
         ]);
 
-        // 5. Link apontando para a página visual na raiz
-        $link_recuperacao = "http://localhost/helpdesk/recuperacao-senha.php?token=" . $token;
+        // 5. Link dinâmico apontando para o domínio/servidor atual (local ou produção)
+        $protocolo = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+        $host = $_SERVER['HTTP_HOST'];
+        $link_recuperacao = $protocolo . $host . "/helpdesk/recuperacao-senha.php?token=" . $token;
 
-        // ===== ENVIO DE E-MAIL (Chamando a sua função global) =====
-        $assunto = "Recuperação de Senha - Sistema HelpDesk";
+        // ===== CONFIGURAÇÃO DE CORES DINÂMICAS PARA O E-MAIL =====
+        $primary = (!empty($cor_primaria)) ? $cor_primaria : '#4f46e5';
+        $nome_app = (!empty($nome_sistema)) ? $nome_sistema : 'Sistema Helpdesk';
 
-        // Corpo do e-mail com design amigável em HTML
+        // ===== ENVIO DE E-MAIL (Com identidade visual dinâmica do sistema) =====
+        $assunto = "Recuperação de Senha - " . $nome_app;
+
+        // Corpo do e-mail com design amigável em HTML utilizando as cores do sistema
         $mensagem = "
             <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;'>
-                <h2 style='color: #4f46e5;'>Olá, " . htmlspecialchars($usuario['nome']) . "!</h2>
-                <p style='color: #333; font-size: 16px;'>Recebemos uma solicitação para redefinir a senha da sua conta no <strong>Sistema HelpDesk</strong>.</p>
+                <h2 style='color: {$primary}; margin-top: 0;'>Olá, " . htmlspecialchars($usuario['nome']) . "!</h2>
+                <p style='color: #333; font-size: 16px;'>Recebemos uma solicitação para redefinir a senha da sua conta no <strong>{$nome_app}</strong>.</p>
                 <p style='color: #333; font-size: 16px;'>Para prosseguir e escolher uma nova senha, basta clicar no botão abaixo:</p>
                 
                 <p style='text-align: center; margin: 30px 0;'>
-                    <a href='{$link_recuperacao}' style='background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;'>Redefinir senha</a>
+                    <a href='{$link_recuperacao}' style='background-color: {$primary}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;'>Redefinir senha</a>
                 </p>
                 
                 <p style='font-size: 12px; color: #666;'>Este link de segurança é válido por apenas 30 minutos. Se não foi você quem solicitou esta alteração, pode ignorar este e-mail com segurança.</p>
