@@ -20,14 +20,16 @@ function menuAtivo($pagina, $atual) {
 <aside class="hd-layout__sidebar">
     <div>
         <div class="hd-sidebar__brand">
-            <i class="fa-solid fa-headset"></i>
+            <div class="hd-sidebar__brand-icon" aria-hidden="true">
+                <i class="fa-solid fa-headset"></i>
+            </div>
             <span><?php echo htmlspecialchars($nome_sistema ?? 'Helpdesk', ENT_QUOTES, 'UTF-8'); ?></span>
         </div>
         
         <ul class="hd-sidebar__menu">
             <!-- Item: Dashboard -->
             <li class="hd-sidebar__item <?php echo menuAtivo('dashboard', $atual); ?>">
-                <a href="index.php?p=dashboard" class="hd-sidebar__link">
+                <a href="dashboard" class="hd-sidebar__link">
                     <i class="fa-solid fa-chart-pie"></i>
                     <span>Dashboard</span>
                 </a>
@@ -35,7 +37,7 @@ function menuAtivo($pagina, $atual) {
             
             <!-- Item: Chamados -->
             <li class="hd-sidebar__item <?php echo menuAtivo('chamados', $atual); ?>">
-                <a href="index.php?p=chamados" class="hd-sidebar__link">
+                <a href="chamados" class="hd-sidebar__link">
                     <i class="fa-solid fa-ticket"></i>
                     <span>Chamados</span>
                 </a>
@@ -43,16 +45,32 @@ function menuAtivo($pagina, $atual) {
             
             <!-- Item: Clientes -->
             <li class="hd-sidebar__item <?php echo menuAtivo('clientes', $atual); ?>">
-                <a href="index.php?p=clientes" class="hd-sidebar__link">
+                <a href="clientes" class="hd-sidebar__link">
                     <i class="fa-solid fa-users"></i>
                     <span>Clientes</span>
                 </a>
             </li>
             
+            <!-- Item: Usuários -->
+            <li class="hd-sidebar__item <?php echo menuAtivo('usuarios', $atual); ?>">
+                <a href="usuarios" class="hd-sidebar__link">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span>Usuários</span>
+                </a>
+            </li>
+
+            <!-- Item: Relatórios -->
+            <li class="hd-sidebar__item <?php echo menuAtivo('relatorios', $atual); ?>">
+                <a href="relatorios" class="hd-sidebar__link">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Relatórios</span>
+                </a>
+            </li>
+
             <!-- Item: Configurações (Apenas Administradores) -->
             <?php if ($nivel_usuario_atual === 'admin' || $nivel_usuario_atual === 'administrador'): ?>
             <li class="hd-sidebar__item <?php echo menuAtivo('configuracoes', $atual); ?>">
-                <a href="index.php?p=configuracoes" class="hd-sidebar__link">
+                <a href="configuracoes" class="hd-sidebar__link">
                     <i class="fa-solid fa-gears"></i>
                     <span>Configurações</span>
                 </a>

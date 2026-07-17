@@ -4,8 +4,20 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 require_once __DIR__ . '/conexao.php';
 
-// Chamar o script de limpeza de forma assíncrona (sem travar a tela do usuário)
-@file_get_contents("http://" . $_SERVER['HTTP_HOST'] . "/helpdesk/scripts/limpar_tokens_expirados.php");
+// Limpeza de tokens de recuperação expirados: executada direto no banco (sem requisição
+// HTTP para o próprio servidor, que bloqueava a tela de login) e no máximo 1x por hora
+// por sessão — o DELETE é barato, mas não precisa rodar em toda visita.
+$agora = time();
+if (($agora - ($_SESSION['ultima_limpeza_tokens'] ?? 0)) > 3600) {
+    try {
+        $data_limite = date('Y-m-d H:i:s', strtotime('-1 day'));
+        $stmtLimpeza = $pdo->prepare("DELETE FROM recuperacao_senha WHERE usado = 1 OR expira_em < :data_limite");
+        $stmtLimpeza->execute([':data_limite' => $data_limite]);
+    } catch (PDOException $e) {
+        // Tabela pode ainda não existir; a limpeza não é crítica para o login
+    }
+    $_SESSION['ultima_limpeza_tokens'] = $agora;
+}
 
 // Token CSRF para o formulário de login
 if (empty($_SESSION['csrf_token_login'])) {
@@ -19,20 +31,25 @@ if ($loginMensagem !== null) {
 }
 
 // ===== USUÁRIO ADMINISTRADOR PADRÃO (criado só se ainda não existir) =====
-$stmt = $pdo->query("SELECT COUNT(*) FROM usuarios WHERE nivel = 'Administrador'");
-if ($stmt->fetchColumn() == 0) {
-    $senha_hash = password_hash($senha_padrao, PASSWORD_DEFAULT);
-    $ins = $pdo->prepare("
-        INSERT INTO usuarios (nome, email, senha, nivel, ativo, empresa)
-        VALUES (:nome, :email, :senha, 'Administrador', :ativo, :empresa)
-    ");
-    $ins->execute([
-        ':nome'   => 'Administrador',
-        ':email'  => $email_sistema,
-        ':senha'  => $senha_hash,
-        ':ativo'  => '1',
-        ':empresa'=> $id_empresa,
-    ]);
+// A verificação vai ao banco apenas uma vez por sessão: depois que confirmamos que o
+// admin existe, guardamos essa confirmação e as próximas visitas ao login pulam a consulta.
+if (empty($_SESSION['admin_verificado'])) {
+    $stmt = $pdo->query("SELECT COUNT(*) FROM usuarios WHERE nivel = 'Administrador'");
+    if ($stmt->fetchColumn() == 0) {
+        $senha_hash = password_hash($senha_padrao, PASSWORD_DEFAULT);
+        $ins = $pdo->prepare("
+            INSERT INTO usuarios (nome, email, senha, nivel, ativo, empresa)
+            VALUES (:nome, :email, :senha, 'Administrador', :ativo, :empresa)
+        ");
+        $ins->execute([
+            ':nome'   => 'Administrador',
+            ':email'  => $email_sistema,
+            ':senha'  => $senha_hash,
+            ':ativo'  => '1',
+            ':empresa'=> $id_empresa,
+        ]);
+    }
+    $_SESSION['admin_verificado'] = true;
 }
 
 // Definição de cores de segurança (fallback) se não existirem no banco
@@ -68,9 +85,6 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
         window.LOGIN_MENSAGEM = <?php echo json_encode($loginMensagem, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
     </script>
     <?php endif; ?>
-    
-    <!-- Flatpickr (datas) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -191,10 +205,6 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
-    <script src="js/flatpickr-config.js"></script>
-    
     <script src="js/mensagens.js"></script>
     <script>
         window.LOGIN_MODO_TESTE = <?php echo json_encode($modo_teste ?? false, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
@@ -205,6 +215,5 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
         ?>;
     </script>
     <script src="js/login.js"></script>
-    <script src="js/scripts.js"></script>
 </body>
 </html>

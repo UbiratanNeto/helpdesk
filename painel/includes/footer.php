@@ -26,21 +26,3 @@ $ano_atual = date('Y');
         
     </div>
 </footer>
-
-<!-- Scripts Globais do Painel -->
-
-<!-- Script para controle da Sidebar Responsiva (Abre/Fecha) -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Busca pelo ID correto definido na sua topbar ('btn-toggle-sidebar')
-    const sidebarToggle = document.getElementById('btn-toggle-sidebar');
-    const layout = document.querySelector('.hd-layout');
-
-    if (sidebarToggle && layout) {
-        sidebarToggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            layout.classList.toggle('hd-layout--sidebar-collapsed');
-        });
-    }
-});
-</script>

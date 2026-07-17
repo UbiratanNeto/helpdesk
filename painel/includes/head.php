@@ -26,13 +26,7 @@ if (!preg_match('/^#[a-fA-F0-9]{3,8}$/', $secondary)) {
 <!-- O seu arquivo ÚNICO de estilos, localizado na raiz de estilos do Helpdesk -->
 <link rel="stylesheet" href="../css/main.css">
 
-<!-- PONTE DE COMUNICAÇÃO: Injeta as variáveis de cor dinâmicas para o CSS -->
-<style>
-:root {
-    --cor-primaria: <?php echo $primary; ?>;
-    --cor-secundaria: <?php echo $secondary; ?>;
-}
-</style>
-
-<!-- ChartJS para renderizar os gráficos nos dashboards -->
+<!-- ChartJS: carregado só na página que realmente usa gráfico -->
+<?php if (($pagina ?? '') === 'dashboard'): ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<?php endif; ?>
