@@ -21,7 +21,12 @@
     --helpdesk-primary: var(--cor-primaria);
     --helpdesk-secondary: var(--cor-secundaria);
     --helpdesk-gradient: linear-gradient(135deg, var(--cor-primaria) 0%, var(--cor-secundaria) 100%);
-    --helpdesk-sidebar-active: rgba(255, 255, 255, 0.12);
+
+    /* Gradiente exclusivo da sidebar: mistura a cor de marca com branco para um tom mais suave.
+       Não é usado em botões/avatar/outros elementos — só a sidebar recebe esse tom pastel. */
+    --helpdesk-sidebar-gradient: linear-gradient(135deg, color-mix(in srgb, var(--cor-primaria) 55%, white) 0%, color-mix(in srgb, var(--cor-secundaria) 45%, white) 100%);
+
+    --helpdesk-sidebar-active: rgba(255, 255, 255, 0.2);
     --helpdesk-card-radius: 1rem;
 }
 
@@ -53,12 +58,13 @@ body {
 /* Sidebar com degradê dinâmico vindo das configurações */
 .hd-layout__sidebar {
     width: var(--sidebar-w);
-    background: var(--helpdesk-gradient) !important;
+    background: var(--helpdesk-sidebar-gradient) !important;
     color: #ffffff;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     flex-shrink: 0;
+    overflow-y: auto;
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 50;
     box-shadow: 4px 0 25px rgba(15, 23, 42, 0.08);
@@ -105,9 +111,17 @@ body {
     overflow: hidden;
 }
 
-.hd-sidebar__brand i {
-    color: #ffffff;
-    font-size: 1.3rem;
+.hd-sidebar__brand-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 10px;
+    background: #ffffff;
+    color: var(--cor-primaria);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    flex-shrink: 0;
 }
 
 .hd-sidebar__menu {
@@ -126,7 +140,9 @@ body {
     display: flex;
     align-items: center;
     gap: 0.85rem;
-    padding: 0.8rem 1.5rem;
+    margin: 0 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
     color: rgba(255, 255, 255, 0.75);
     text-decoration: none;
     font-weight: 500;
@@ -137,16 +153,14 @@ body {
 
 .hd-sidebar__link:hover {
     color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Estado Ativo do Menu Lateral */
+/* Estado Ativo do Menu Lateral: retângulo arredondado suave, sem borda */
 .hd-sidebar__item--active .hd-sidebar__link {
     color: #ffffff;
     background-color: var(--helpdesk-sidebar-active);
     font-weight: 600;
-    border-left: 4px solid #ffffff;
-    padding-left: calc(1.5rem - 4px);
 }
 
 .hd-sidebar__footer {
@@ -192,9 +206,9 @@ body {
    ========================================================================== */
 .hd-container {
     padding: 2rem;
-    width: 100%;
-    max-width: 1400px; /* Garante que o layout não estique infinitamente em monitores UltraWide */
-    margin: 0 auto;
+    width: 100%; /* Ocupa toda a largura disponível */
+    max-width: 100%; /* Remove a trava de 1400px para expandir até as bordas */
+    margin: 0;      /* Remove o alinhamento centralizado */
     display: flex;
     flex-direction: column;
     gap: 2rem;
@@ -298,6 +312,7 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .hd-card__title {
@@ -521,4 +536,281 @@ body {
         padding: 1.25rem;
         gap: 1.25rem;
     }
+}
+
+/* ==========================================================================
+   10. TELA DE LOGIN
+   ========================================================================== */
+.login-container {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-body);
+    padding: 2rem 1rem;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 420px;
+}
+
+.hd-card__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.hd-card__icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 12px;
+    background: var(--helpdesk-gradient);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.hd-card__subtitle {
+    font-size: 0.85rem;
+    color: var(--muted-color);
+    margin: 0.15rem 0 0 0;
+}
+
+.hd-card__footer {
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid var(--border-line);
+}
+
+.hd-card__footer--center {
+    display: flex;
+    justify-content: center;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.hd-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.hd-field__label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.hd-field__wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.hd-field__icon {
+    position: absolute;
+    left: 0.9rem;
+    color: var(--muted-color);
+    display: flex;
+    pointer-events: none;
+}
+
+.hd-field__input {
+    width: 100%;
+    padding: 0.65rem 0.9rem 0.65rem 2.65rem;
+    border: 1px solid var(--border-line);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+}
+
+.hd-field__input:focus {
+    outline: none;
+    border-color: var(--cor-primaria);
+}
+
+.hd-field__hint {
+    font-size: 0.78rem;
+    color: var(--muted-color);
+    margin: 0.35rem 0 0 0;
+}
+
+.hd-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.hd-check__input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--cor-primaria);
+    cursor: pointer;
+}
+
+.hd-check__label {
+    font-size: 0.85rem;
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+.hd-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.7rem 1.25rem;
+    border-radius: 10px;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.hd-btn--primary {
+    background: var(--helpdesk-gradient);
+    color: #ffffff;
+}
+
+.hd-btn--primary:hover {
+    opacity: 0.92;
+}
+
+.login-form .hd-btn--primary {
+    width: 100%;
+}
+
+.hd-btn--ghost {
+    background: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--border-line);
+}
+
+.hd-btn--ghost:hover {
+    background: #f1f5f9;
+}
+
+.hd-link {
+    background: none;
+    border: none;
+    color: var(--cor-primaria);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    padding: 0;
+}
+
+.hd-link:hover {
+    text-decoration: underline;
+}
+
+.hd-modal-dialog {
+    max-width: 440px;
+}
+
+.hd-alert {
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.hd-alert--error {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   11. CARDS DE MÉTRICA COLORIDOS (.hd-stat)
+   ========================================================================== */
+.hd-stat {
+    position: relative;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    color: #ffffff;
+    overflow: hidden; /* Mantém a marca d'água recortada dentro do card */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+.hd-stat--blue   { background: #2563eb; }
+.hd-stat--green  { background: #16a34a; }
+.hd-stat--orange { background: #f59e0b; }
+.hd-stat--red    { background: #ef4444; }
+
+/* Linha superior: ícone pequeno em caixa translúcida + rótulo ao lado */
+.hd-stat__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.hd-stat__icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.hd-stat__label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Número grande alinhado à esquerda */
+.hd-stat__value {
+    font-size: 2.1rem;
+    font-weight: 800;
+    line-height: 1;
+    margin: 0.75rem 0 0 0;
+}
+
+/* Ícone gigante "marca d'água" no canto direito */
+.hd-stat__watermark {
+    position: absolute;
+    right: -0.5rem;
+    bottom: -0.75rem;
+    font-size: 5.5rem;
+    color: rgba(255, 255, 255, 0.18);
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   12. BOTÃO OUTLINE PEQUENO ("Ver todos")
+   ========================================================================== */
+.hd-btn--outline {
+    background: transparent;
+    color: var(--cor-primaria);
+    border: 1px solid var(--cor-primaria);
+}
+
+.hd-btn--outline:hover {
+    opacity: 0.8;
+}
+
+.hd-btn--sm {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8rem;
 }

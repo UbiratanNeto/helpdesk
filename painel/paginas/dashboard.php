@@ -10,26 +10,28 @@ if (!isset($pdo) || !isset($_SESSION['id_empresa'])) {
 }
 
 try {
-    // 1. Query para buscar métricas reais baseadas no ID da empresa salvo na sessão
-    // Chamados Abertos (Status = 'Aberto')
-    $stmtOpen = $pdo->prepare("SELECT COUNT(id) FROM chamados WHERE empresa_id = :empresa AND status = 'Aberto'");
-    $stmtOpen->execute([':empresa' => $_SESSION['id_empresa']]);
-    $total_abertos = $stmtOpen->fetchColumn();
+    // 1. Métricas do topo em UMA única consulta (subqueries escalares), em vez de 4 idas ao banco.
+    //    Cada ocorrência de :empresa precisa de um nome próprio porque a conexão usa
+    //    PDO::ATTR_EMULATE_PREPARES = false (prepares nativos não aceitam o mesmo placeholder repetido).
+    $stmtMetricas = $pdo->prepare("
+        SELECT
+            (SELECT COUNT(id) FROM chamados WHERE empresa_id = :empresa1 AND status = 'Aberto')  AS total_abertos,
+            (SELECT COUNT(id) FROM chamados WHERE empresa_id = :empresa2 AND status = 'Fechado') AS total_fechados,
+            (SELECT COUNT(id) FROM clientes WHERE empresa_id = :empresa3)                        AS total_clientes,
+            (SELECT COUNT(id) FROM usuarios WHERE empresa = :empresa4 AND ativo = 1)             AS total_usuarios
+    ");
+    $stmtMetricas->execute([
+        ':empresa1' => $_SESSION['id_empresa'],
+        ':empresa2' => $_SESSION['id_empresa'],
+        ':empresa3' => $_SESSION['id_empresa'],
+        ':empresa4' => $_SESSION['id_empresa'],
+    ]);
+    $metricas = $stmtMetricas->fetch(PDO::FETCH_ASSOC);
 
-    // Chamados Fechados (Status = 'Fechado')
-    $stmtClosed = $pdo->prepare("SELECT COUNT(id) FROM chamados WHERE empresa_id = :empresa AND status = 'Fechado'");
-    $stmtClosed->execute([':empresa' => $_SESSION['id_empresa']]);
-    $total_fechados = $stmtClosed->fetchColumn();
-
-    // Clientes Registrados na empresa
-    $stmtClientes = $pdo->prepare("SELECT COUNT(id) FROM clientes WHERE empresa_id = :empresa");
-    $stmtClientes->execute([':empresa' => $_SESSION['id_empresa']]);
-    $total_clientes = $stmtClientes->fetchColumn();
-
-    // Usuários ativos da empresa
-    $stmtUsers = $pdo->prepare("SELECT COUNT(id) FROM usuarios WHERE empresa = :empresa AND ativo = 1");
-    $stmtUsers->execute([':empresa' => $_SESSION['id_empresa']]);
-    $total_usuarios = $stmtUsers->fetchColumn();
+    $total_abertos   = $metricas['total_abertos'];
+    $total_fechados  = $metricas['total_fechados'];
+    $total_clientes  = $metricas['total_clientes'];
+    $total_usuarios  = $metricas['total_usuarios'];
 
     // 2. Query para listar os últimos 4 chamados atualizados
     $stmtChamados = $pdo->prepare("
@@ -52,59 +54,42 @@ try {
 }
 ?>
 
-<!-- CONTEÚDO DO DASHBOARD -->
-<div class="hd-welcome">
-    <h1 class="hd-welcome__title">Olá, <?php echo htmlspecialchars($_SESSION['nome'], ENT_QUOTES, 'UTF-8'); ?>!</h1>
-</div>
-
 <!-- GRIDS DE CARTÕES DE MÉTRICA -->
 <section class="hd-metrics-grid">
-    <div class="hd-card hd-metric">
-        <div class="hd-card__body hd-metric__info">
-            <h3>Chamados Abertos</h3>
-            <p class="hd-metric__value"><?php echo (int)$total_abertos; ?></p>
+    <div class="hd-stat hd-stat--blue">
+        <div class="hd-stat__header">
+            <span class="hd-stat__icon"><i class="fa-solid fa-ticket"></i></span>
+            <h3 class="hd-stat__label">Chamados Abertos</h3>
         </div>
-        <div class="hd-card__body">
-            <div class="hd-metric__icon-box hd-metric__icon-box--blue">
-                <i class="fa-solid fa-envelope-open"></i>
-            </div>
-        </div>
+        <p class="hd-stat__value"><?php echo (int)$total_abertos; ?></p>
+        <i class="fa-solid fa-ticket hd-stat__watermark" aria-hidden="true"></i>
     </div>
 
-    <div class="hd-card hd-metric">
-        <div class="hd-card__body hd-metric__info">
-            <h3>Chamados Fechados</h3>
-            <p class="hd-metric__value"><?php echo (int)$total_fechados; ?></p>
+    <div class="hd-stat hd-stat--green">
+        <div class="hd-stat__header">
+            <span class="hd-stat__icon"><i class="fa-solid fa-circle-check"></i></span>
+            <h3 class="hd-stat__label">Chamados Concluídos</h3>
         </div>
-        <div class="hd-card__body">
-            <div class="hd-metric__icon-box hd-metric__icon-box--green">
-                <i class="fa-solid fa-circle-check"></i>
-            </div>
-        </div>
+        <p class="hd-stat__value"><?php echo (int)$total_fechados; ?></p>
+        <i class="fa-solid fa-circle-check hd-stat__watermark" aria-hidden="true"></i>
     </div>
 
-    <div class="hd-card hd-metric">
-        <div class="hd-card__body hd-metric__info">
-            <h3>Clientes Reg.</h3>
-            <p class="hd-metric__value"><?php echo (int)$total_clientes; ?></p>
+    <div class="hd-stat hd-stat--orange">
+        <div class="hd-stat__header">
+            <span class="hd-stat__icon"><i class="fa-solid fa-users"></i></span>
+            <h3 class="hd-stat__label">Clientes</h3>
         </div>
-        <div class="hd-card__body">
-            <div class="hd-metric__icon-box hd-metric__icon-box--orange">
-                <i class="fa-solid fa-users"></i>
-            </div>
-        </div>
+        <p class="hd-stat__value"><?php echo (int)$total_clientes; ?></p>
+        <i class="fa-solid fa-users hd-stat__watermark" aria-hidden="true"></i>
     </div>
 
-    <div class="hd-card hd-metric">
-        <div class="hd-card__body hd-metric__info">
-            <h3>Usuários Ativos</h3>
-            <p class="hd-metric__value"><?php echo (int)$total_usuarios; ?></p>
+    <div class="hd-stat hd-stat--red">
+        <div class="hd-stat__header">
+            <span class="hd-stat__icon"><i class="fa-solid fa-user-shield"></i></span>
+            <h3 class="hd-stat__label">Usuários</h3>
         </div>
-        <div class="hd-card__body">
-            <div class="hd-metric__icon-box hd-metric__icon-box--red">
-                <i class="fa-solid fa-user-shield"></i>
-            </div>
-        </div>
+        <p class="hd-stat__value"><?php echo (int)$total_usuarios; ?></p>
+        <i class="fa-solid fa-user-shield hd-stat__watermark" aria-hidden="true"></i>
     </div>
 </section>
 
@@ -113,8 +98,12 @@ try {
     
     <!-- Bloco do Gráfico -->
     <div class="hd-card">
-        <div class="hd-card__header">
-            <h2 class="hd-card__title" style="font-size: 1.15rem;">Chamados por Mês</h2>
+        <div class="hd-card__header hd-card__header--row">
+            <h2 class="hd-card__title" style="font-size: 1.15rem;">
+                <i class="fa-solid fa-chart-line" style="color: var(--cor-primaria); margin-right: 0.5rem;"></i>
+                Visão Geral
+            </h2>
+            <span style="font-size: 0.85rem; color: var(--muted-color); font-weight: 600;">Chamados por mês</span>
         </div>
         <div class="hd-card__body" style="height: 280px; position: relative;">
             <canvas id="canvasChart"></canvas>
@@ -125,9 +114,12 @@ try {
     <div class="hd-card">
         <div class="hd-card__header hd-card__header--row">
             <div>
-                <h2 class="hd-card__title" style="font-size: 1.15rem;">Últimos Chamados</h2>
+                <h2 class="hd-card__title" style="font-size: 1.15rem;">
+                    <i class="fa-regular fa-clock" style="color: var(--cor-primaria); margin-right: 0.5rem;"></i>
+                    Últimos Chamados
+                </h2>
             </div>
-            <a href="index.php?p=chamados" class="hd-link">Ver todos</a>
+            <a href="chamados" class="hd-btn hd-btn--outline hd-btn--sm">Ver todos</a>
         </div>
         <div class="hd-card__body">
             <div class="hd-table-responsive">

@@ -106,6 +106,6 @@ $_SESSION['email']      = $usuario['email'];
 $_SESSION['nivel']      = $usuario['nivel'];
 $_SESSION['id_empresa'] = (int) $usuario['empresa'];
 
-// Redireciona com caminho explícito para o painel
-header('Location: painel/index.php');
+// Redireciona com caminho explícito para o painel (URL amigável)
+header('Location: painel/dashboard');
 exit;

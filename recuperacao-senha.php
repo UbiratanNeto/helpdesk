@@ -66,13 +66,10 @@ if ($token) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redefinir senha - HelpDesk</title>
     
-    <!-- Tailwind CSS para estrutura rápida -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    
     <!-- SweetAlert2 para notificações bonitas -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <!-- CSS Unificado (Opcional se precisar de herança global) -->
+
+    <!-- CSS Unificado do sistema -->
     <link rel="stylesheet" href="css/main.css">
 
     <!-- Injeção dinâmica de variáveis CSS para cor primária e secundária -->
@@ -81,62 +78,70 @@ if ($token) {
             --cor-primaria: <?php echo $primary; ?>;
             --cor-secundaria: <?php echo $secondary; ?>;
         }
-
-        /* Substitui o fundo hardcoded pelo gradiente dinâmico do sistema */
-        body {
-            background: linear-gradient(135deg, var(--cor-primaria) 0%, var(--cor-secundaria) 100%) !important;
-        }
-
-        /* Classe utilitária para aplicar nossa cor de marca aos elementos do formulário */
-        .btn-brand {
-            background-color: var(--cor-primaria) !important;
-            transition: filter 0.2s ease;
-        }
-        .btn-brand:hover {
-            filter: brightness(0.9);
-        }
-        .focus-brand:focus {
-            --tw-ring-color: var(--cor-primaria) !important;
-            border-color: var(--cor-primaria) !important;
-        }
     </style>
 </head>
 
-<body class="flex items-center justify-center min-h-screen">
+<body>
 
-    <div class="w-full max-w-md p-8 bg-white rounded-lg shadow-md m-4">
-        <div class="text-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Redefinir senha</h2>
-            <p class="text-sm text-gray-600">Insira a sua nova senha de acesso abaixo</p>
-        </div>
-
-        <?php if (!$isValidToken): ?>
-            <div class="text-center p-4 bg-red-50 rounded-md border border-red-200">
-                <p class="text-red-700 font-medium mb-4"><?php echo htmlspecialchars($errorMessage); ?></p>
-                <a href="index.php" class="inline-block w-full btn-brand text-white font-semibold py-2 px-4 rounded text-center text-sm transition">
-                    Voltar para o Login
-                </a>
+    <div class="login-container">
+        <div class="hd-card login-card">
+            <div class="hd-card__header">
+                <div class="hd-card__brand">
+                    <div class="hd-card__icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2Zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2ZM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="hd-card__title">Redefinir senha</h1>
+                        <p class="hd-card__subtitle">Insira a sua nova senha de acesso abaixo</p>
+                    </div>
+                </div>
             </div>
-        <?php else: ?>
-            <form id="formResetPassword" class="space-y-4">
-                <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nova senha</label>
-                    <input type="password" name="nova_senha" required minlength="6" placeholder="Mínimo 6 caracteres"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus-brand text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar nova senha</label>
-                    <input type="password" id="confirm_password" required minlength="6" placeholder="Repita a senha"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus-brand text-sm">
-                </div>
-                <button type="submit" id="btnSubmit"
-                    class="w-full btn-brand text-white font-semibold py-2 px-4 rounded transition text-sm flex justify-center items-center cursor-pointer">
-                    Atualizar senha
-                </button>
-            </form>
-        <?php endif; ?>
+            <div class="hd-card__body">
+                <?php if (!$isValidToken): ?>
+                    <div class="hd-alert hd-alert--error">
+                        <p><?php echo htmlspecialchars($errorMessage); ?></p>
+                    </div>
+                    <a href="index.php" class="hd-btn hd-btn--primary" style="width: 100%; margin-top: 1rem;">
+                        Voltar para o Login
+                    </a>
+                <?php else: ?>
+                    <form id="formResetPassword" class="login-form">
+                        <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
+
+                        <div class="hd-field">
+                            <label for="nova_senha" class="hd-field__label">Nova senha</label>
+                            <div class="hd-field__wrap">
+                                <span class="hd-field__icon" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2Zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
+                                    </svg>
+                                </span>
+                                <input type="password" id="nova_senha" name="nova_senha" class="hd-field__input" required minlength="6" placeholder="Mínimo 6 caracteres">
+                            </div>
+                        </div>
+
+                        <div class="hd-field">
+                            <label for="confirm_password" class="hd-field__label">Confirmar nova senha</label>
+                            <div class="hd-field__wrap">
+                                <span class="hd-field__icon" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2Zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
+                                    </svg>
+                                </span>
+                                <input type="password" id="confirm_password" class="hd-field__input" required minlength="6" placeholder="Repita a senha">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btnSubmit" class="hd-btn hd-btn--primary">
+                            Atualizar senha
+                        </button>
+                    </form>
+                <?php endif; ?>
+            </div>
+        </div>
     </div>
 
     <script>
