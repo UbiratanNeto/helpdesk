@@ -29,7 +29,7 @@ unset($_SESSION['csrf_token_login']);
 
 // ---------- Limite de tentativas (Proteção contra Brute Force) ----------
 $max_tentativas = 5;
-$bloqueio_minutos = 15;
+$bloqueio_minutos = 10;
 if (empty($_SESSION['login_tentativas'])) {
     $_SESSION['login_tentativas'] = 0;
     $_SESSION['login_ultima_tentativa'] = time();
