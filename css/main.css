@@ -418,6 +418,14 @@ body {
     place-items: center;
 }
 
+.user-avatar-photo {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
 .user-display-name {
     font-size: 0.85rem;
     font-weight: 600;
@@ -813,4 +821,53 @@ body {
 .hd-btn--sm {
     padding: 0.4rem 0.9rem;
     font-size: 0.8rem;
+}
+
+/* ==========================================================================
+   13. FORMULÁRIOS EM GRID (ex.: modal "Editar Configurações")
+   ========================================================================== */
+.hd-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: end;
+}
+
+.hd-form-section-title {
+    grid-column: 1 / -1;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--muted-color);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+.hd-form-divider {
+    grid-column: 1 / -1;
+    height: 1px;
+    background: var(--border-line);
+    margin: 0.25rem 0;
+}
+
+/* Variante de .hd-field__input sem o recuo reservado para ícone (usada fora dos formulários de login) */
+.hd-field__input--plain {
+    padding-left: 0.9rem;
+}
+
+.hd-color-swatch-group {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.hd-color-swatch {
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-shrink: 0;
+    padding: 2px;
+    border: 1px solid var(--border-line);
+    border-radius: 8px;
+    cursor: pointer;
+    background: none;
 }

@@ -31,25 +31,22 @@ if ($loginMensagem !== null) {
 }
 
 // ===== USUÁRIO ADMINISTRADOR PADRÃO (criado só se ainda não existir) =====
-// A verificação vai ao banco apenas uma vez por sessão: depois que confirmamos que o
-// admin existe, guardamos essa confirmação e as próximas visitas ao login pulam a consulta.
-if (empty($_SESSION['admin_verificado'])) {
-    $stmt = $pdo->query("SELECT COUNT(*) FROM usuarios WHERE nivel = 'Administrador'");
-    if ($stmt->fetchColumn() == 0) {
-        $senha_hash = password_hash($senha_padrao, PASSWORD_DEFAULT);
-        $ins = $pdo->prepare("
-            INSERT INTO usuarios (nome, email, senha, nivel, ativo, empresa)
-            VALUES (:nome, :email, :senha, 'Administrador', :ativo, :empresa)
-        ");
-        $ins->execute([
-            ':nome'   => 'Administrador',
-            ':email'  => $email_sistema,
-            ':senha'  => $senha_hash,
-            ':ativo'  => '1',
-            ':empresa'=> $id_empresa,
-        ]);
-    }
-    $_SESSION['admin_verificado'] = true;
+// Roda em toda visita à tela de login (sem cache de sessão): é um SELECT COUNT barato,
+// e sem cache aqui o sistema sempre consegue se auto-recuperar se a tabela for limpa.
+$stmt = $pdo->query("SELECT COUNT(*) FROM usuarios WHERE nivel = 'Administrador'");
+if ($stmt->fetchColumn() == 0) {
+    $senha_hash = password_hash($senha_padrao, PASSWORD_DEFAULT);
+    $ins = $pdo->prepare("
+        INSERT INTO usuarios (nome, email, senha, nivel, ativo, empresa, foto)
+        VALUES (:nome, :email, :senha, 'Administrador', :ativo, :empresa, 'sem_foto.png')
+    ");
+    $ins->execute([
+        ':nome'   => 'Administrador',
+        ':email'  => $email_sistema,
+        ':senha'  => $senha_hash,
+        ':ativo'  => '1',
+        ':empresa'=> $id_empresa,
+    ]);
 }
 
 // Definição de cores de segurança (fallback) se não existirem no banco

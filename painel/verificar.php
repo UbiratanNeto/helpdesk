@@ -19,7 +19,7 @@ require_once __DIR__ . '/../conexao.php';
 
 try {
     // 3. Busca no banco os dados em tempo real para verificar se o usuário continua ativo ou mudou de nível
-    $stmt = $pdo->prepare("SELECT id, nome, email, telefone, cpf, nivel, ativo, empresa FROM usuarios WHERE id = :id LIMIT 1");
+    $stmt = $pdo->prepare("SELECT id, nome, email, telefone, cpf, nivel, ativo, empresa, foto FROM usuarios WHERE id = :id LIMIT 1");
     $stmt->execute([':id' => $_SESSION['id']]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -58,6 +58,7 @@ try {
     $_SESSION['email']      = $usuario['email'];
     $_SESSION['nivel']      = $usuario['nivel'];
     $_SESSION['id_empresa'] = (int) $usuario['empresa'];
+    $_SESSION['foto']       = $usuario['foto'];
 
     // 5. Cria as variáveis locais limpas e protegidas contra ataques XSS para usar no HTML das páginas
     $id_usuario_logado = (int) $_SESSION['id'];
