@@ -119,5 +119,12 @@ if ($config) {
     $telefone_sistema = $config['telefone_sistema'] ?? $telefone_sistema;
     $email_sistema    = $config['email_sistema']    ?? $email_sistema;
     $id_empresa       = (int) ($config['empresa']   ?? $id_empresa);
+
+    // Dados de SMTP: host/porta/segurança podem ir pro formulário de configurações normalmente.
+    // $smtp_senha NUNCA deve ser impresso em HTML — existe aqui só pra uso futuro no envio de e-mails.
+    $smtp_host      = $config['smtp_host']      ?? '';
+    $smtp_porta     = $config['smtp_porta']     ?? '';
+    $smtp_seguranca = $config['smtp_seguranca'] ?? '';
+    $smtp_senha     = $config['smtp_senha']     ?? '';
 }
 ?>

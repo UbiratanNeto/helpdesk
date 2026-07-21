@@ -123,6 +123,26 @@ const Mensagens = {
   },
 
   /**
+   * Exibe tela de carregamento (Loading)
+   */
+  carregando(titulo = 'Processando...') {
+    return Swal.fire({
+      title: titulo,
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+  },
+
+  /**
+   * Fecha qualquer alerta/loading ativo no momento
+   */
+  fechar() {
+    Swal.close();
+  },
+
+  /**
    * Inicializa Flatpickr em todos os elementos que tiverem data-flatpickr
    * Ex.: <input type="text" data-flatpickr data-flatpickr-mode="single">
    * Opções em data-flatpickr-opções (JSON) ou segundo argumento

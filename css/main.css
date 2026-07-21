@@ -871,3 +871,13 @@ body {
     cursor: pointer;
     background: none;
 }
+
+/* ==========================================================================
+   14. SWEETALERT2 ACIMA DE QUALQUER MODAL DO SISTEMA
+   ========================================================================== */
+/* As modais do painel (#modalConfig, #modalPerfil) usam z-index: 9999.
+   O SweetAlert2 usa 1060 por padrão, então some atrás delas — forçamos aqui
+   um valor maior para garantir que o alerta sempre apareça por cima. */
+.swal2-container {
+    z-index: 100000 !important;
+}
