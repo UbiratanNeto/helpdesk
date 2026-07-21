@@ -19,7 +19,7 @@ require_once __DIR__ . '/../conexao.php';
 
 try {
     // 3. Busca no banco os dados em tempo real para verificar se o usuário continua ativo ou mudou de nível
-    $stmt = $pdo->prepare("SELECT id, nome, email, telefone, cpf, nivel, ativo, empresa, foto FROM usuarios WHERE id = :id LIMIT 1");
+    $stmt = $pdo->prepare("SELECT id, nome, email, telefone, cpf, nivel, ativo, empresa, foto, cep, estado, cidade, bairro, endereco, numero, complemento FROM usuarios WHERE id = :id LIMIT 1");
     $stmt->execute([':id' => $_SESSION['id']]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -59,6 +59,17 @@ try {
     $_SESSION['nivel']      = $usuario['nivel'];
     $_SESSION['id_empresa'] = (int) $usuario['empresa'];
     $_SESSION['foto']       = $usuario['foto'];
+
+    // Demais dados de perfil, usados só para pré-preencher o modal "Editar Perfil"
+    $_SESSION['telefone']    = $usuario['telefone'];
+    $_SESSION['cpf']         = $usuario['cpf'];
+    $_SESSION['cep']         = $usuario['cep'];
+    $_SESSION['estado']      = $usuario['estado'];
+    $_SESSION['cidade']      = $usuario['cidade'];
+    $_SESSION['bairro']      = $usuario['bairro'];
+    $_SESSION['endereco']    = $usuario['endereco'];
+    $_SESSION['numero']      = $usuario['numero'];
+    $_SESSION['complemento'] = $usuario['complemento'];
 
     // 5. Cria as variáveis locais limpas e protegidas contra ataques XSS para usar no HTML das páginas
     $id_usuario_logado = (int) $_SESSION['id'];

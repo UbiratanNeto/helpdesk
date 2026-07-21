@@ -45,7 +45,7 @@ if ($stmt->fetchColumn() == 0) {
         ':email'  => $email_sistema,
         ':senha'  => $senha_hash,
         ':ativo'  => '1',
-        ':empresa'=> $id_empresa,
+        ':empresa' => $id_empresa,
     ]);
 }
 
@@ -57,35 +57,37 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
 
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - <?php echo htmlspecialchars($nome_sistema ?? 'Helpdesk'); ?></title>
-    
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    
+
     <!-- O seu arquivo ÚNICO de estilos (Localizado na raiz css/) -->
     <link rel="stylesheet" href="css/main.css">
 
     <!-- PONTE DE COMUNICAÇÃO: Passa os valores de cor salvos no banco para o seu CSS unificado -->
     <style>
-    :root {
-        --cor-primaria: <?php echo $primary; ?>;
-        --cor-secundaria: <?php echo $secondary; ?>;
-        --helpdesk-bg: <?php echo $bg_color; ?>;
-    }
+        :root {
+            --cor-primaria: <?php echo $primary; ?>;
+            --cor-secundaria: <?php echo $secondary; ?>;
+            --helpdesk-bg: <?php echo $bg_color; ?>;
+        }
     </style>
 
     <?php if ($loginMensagem !== null): ?>
-    <script>
-        window.LOGIN_MENSAGEM = <?php echo json_encode($loginMensagem, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
-    </script>
+        <script>
+            window.LOGIN_MENSAGEM = <?php echo json_encode($loginMensagem, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+        </script>
     <?php endif; ?>
-    
+
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
+
 <body>
     <div class="login-container">
         <div class="hd-card login-card">
@@ -93,7 +95,7 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
                 <div class="hd-card__brand">
                     <div class="hd-card__icon" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2Zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2ZM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/>
+                            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2Zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2ZM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
                         </svg>
                     </div>
                     <div>
@@ -112,7 +114,7 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
                         <div class="hd-field__wrap">
                             <span class="hd-field__icon" aria-hidden="true">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/>
+                                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z" />
                                 </svg>
                             </span>
                             <input type="email" class="hd-field__input" id="username" name="username" placeholder="Digite seu e-mail" maxlength="100" required autocomplete="username">
@@ -124,7 +126,7 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
                         <div class="hd-field__wrap">
                             <span class="hd-field__icon" aria-hidden="true">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2Zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
+                                    <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2Zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z" />
                                 </svg>
                             </span>
                             <input type="password" class="hd-field__input" id="password" name="password" placeholder="Digite sua senha" maxlength="255" required autocomplete="current-password">
@@ -152,12 +154,12 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
     <div class="modal fade hd-modal" id="modalRecuperarSenha" tabindex="-1" aria-labelledby="modalRecuperarSenhaLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered hd-modal-dialog">
             <div class="modal-content hd-card p-0" style="border: none; overflow: hidden;">
-                
+
                 <div class="hd-card__header hd-card__header--row">
                     <div class="hd-card__brand">
                         <div class="hd-card__icon" aria-hidden="true">
                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
+                                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z" />
                             </svg>
                         </div>
                         <div>
@@ -175,7 +177,7 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
                             <div class="hd-field__wrap">
                                 <span class="hd-field__icon" aria-hidden="true">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/>
+                                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z" />
                                     </svg>
                                 </span>
                                 <input type="email" class="hd-field__input" id="emailRecuperar" name="email" placeholder="Digite seu e-mail" maxlength="100" required autocomplete="email" style="padding-left: 2.65rem;">
@@ -185,7 +187,7 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
 
                         <button type="button" class="hd-btn hd-btn--primary mb-2" id="btnEnviarRecuperacao">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" style="margin-right: 0.55rem; display: inline-block; vertical-align: text-bottom;">
-                                <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-4.178-6.431-6.431-4.179a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.036 9.434l4.418 2.909-2.604-6.631L6.036 9.434Z"/>
+                                <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-4.178-6.431-6.431-4.179a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.036 9.434l4.418 2.909-2.604-6.631L6.036 9.434Z" />
                             </svg>
                             Enviar instruções
                         </button>
@@ -201,16 +203,17 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    
+
     <script src="js/mensagens.js"></script>
     <script>
         window.LOGIN_MODO_TESTE = <?php echo json_encode($modo_teste ?? false, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
         window.LOGIN_USUARIO_TESTE = <?php echo json_encode($usuario_teste ?? '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
         window.LOGIN_SENHA_TESTE = <?php echo json_encode($senha_teste ?? '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
         window.LOGIN_FLASH = <?php echo json_encode($_SESSION['flash'] ?? null);
-        unset($_SESSION['flash']); 
-        ?>;
+                                unset($_SESSION['flash']);
+                                ?>;
     </script>
     <script src="js/login.js"></script>
 </body>
+
 </html>
