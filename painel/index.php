@@ -86,8 +86,8 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
     <!-- Modais do painel (cada um em seu próprio arquivo, ligados pelos links do topbar) -->
     <?php include 'includes/modal-configuracoes.php'; ?>
     <?php include 'includes/modal-perfil.php'; ?>
-    <!-- Certifique-se de que este arquivo JS está sendo chamado no index.php -->
-    <script src="assets/js/ajax-forms.js"></script>
+    <!-- Intercepta o envio dos formulários dos modais via fetch (Configurações e Perfil) -->
+    <script src="assets/js/ajax-form.js"></script>
 
     
 

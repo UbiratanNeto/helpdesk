@@ -146,50 +146,5 @@ $perfil_foto_existe  = $perfil_foto_arquivo !== '' && file_exists(__DIR__ . '/..
 <script src="assets/js/masks.js"></script>
 <script src="assets/js/functions.js"></script>
 
-<!-- SweetAlert2: pode já estar carregado via modal-configuracoes.php, mas este arquivo
-     não deve depender disso — o navegador reaproveita o cache se já tiver baixado. -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<!-- Envia o formulário via fetch (com upload de arquivo incluso), igual ao modal de Configurações -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('formPerfil');
-    if (!form) return;
-
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const botao = form.querySelector('button[type="submit"]');
-        const textoOriginal = botao.textContent;
-        botao.disabled = true;
-        botao.textContent = 'Salvando...';
-
-        fetch(form.action, {
-            method: 'POST',
-            body: new FormData(form)
-        })
-            .then(function (resposta) { return resposta.json(); })
-            .then(function (dados) {
-                if (dados.ok) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Sucesso!',
-                        text: dados.msg,
-                        confirmButtonColor: '#4f46e5'
-                    }).then(function () {
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire({ icon: 'error', title: 'Erro', text: dados.msg, confirmButtonColor: '#4f46e5' });
-                }
-            })
-            .catch(function () {
-                Swal.fire({ icon: 'error', title: 'Erro de conexão', text: 'Não foi possível salvar agora. Tente novamente.', confirmButtonColor: '#4f46e5' });
-            })
-            .finally(function () {
-                botao.disabled = false;
-                botao.textContent = textoOriginal;
-            });
-    });
-});
-</script>
+<!-- O envio do formulário (fetch + upload de arquivo + alerta de sucesso/erro) é tratado
+     de forma genérica por painel/assets/js/ajax-form.js, que já reconhece este form pela action. -->

@@ -117,51 +117,5 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<!-- SweetAlert2: usado pra dar retorno visual sem sair da página -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<!-- Envia o formulário via fetch (o back-end responde em JSON) em vez de deixar o navegador
-     navegar pra scripts/salvar_config.php, que é o que causava a tela crua de JSON. -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('formConfiguracoes');
-    if (!form) return;
-
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const botao = form.querySelector('button[type="submit"]');
-        const textoOriginal = botao.textContent;
-        botao.disabled = true;
-        botao.textContent = 'Salvando...';
-
-        fetch(form.action, {
-            method: 'POST',
-            body: new FormData(form)
-        })
-            .then(function (resposta) { return resposta.json(); })
-            .then(function (dados) {
-                if (dados.ok) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Sucesso!',
-                        text: dados.msg,
-                        confirmButtonColor: '#4f46e5'
-                    }).then(function () {
-                        // Recarrega pra refletir imediatamente nome/cores em toda a tela (sidebar, título, etc.)
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire({ icon: 'error', title: 'Erro', text: dados.msg, confirmButtonColor: '#4f46e5' });
-                }
-            })
-            .catch(function () {
-                Swal.fire({ icon: 'error', title: 'Erro de conexão', text: 'Não foi possível salvar agora. Tente novamente.', confirmButtonColor: '#4f46e5' });
-            })
-            .finally(function () {
-                botao.disabled = false;
-                botao.textContent = textoOriginal;
-            });
-    });
-});
-</script>
+<!-- O envio do formulário (fetch + alerta de sucesso/erro) é tratado de forma genérica
+     por painel/assets/js/ajax-form.js, que já reconhece este form pela action. -->

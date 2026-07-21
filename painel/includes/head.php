@@ -30,3 +30,8 @@ if (!preg_match('/^#[a-fA-F0-9]{3,8}$/', $secondary)) {
 <?php if (($pagina ?? '') === 'dashboard'): ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <?php endif; ?>
+
+<!-- SweetAlert2 + Mensagens: usados pelo ajax-form.js para dar retorno visual
+     ao salvar os modais (Configurações, Perfil), sem sair da página. -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="../js/mensagens.js"></script>
