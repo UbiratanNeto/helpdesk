@@ -52,15 +52,27 @@ const Mensagens = {
 
   /**
    * Sucesso genérico
+   * @param {string} title 
+   * @param {string} text 
+   * @param {boolean} autoClose - Se true, fecha sozinho em 1 segundo (sem botão OK)
    */
-  sucesso(title = 'Sucesso!', text = 'Operação realizada com sucesso.') {
-    return Swal.fire({
+  sucesso(title = 'Sucesso!', text = 'Operação realizada com sucesso.', autoClose = false) {
+    const opcoes = {
       icon: 'success',
       title,
       text,
-      confirmButtonText: 'OK',
       confirmButtonColor: '#667eea',
-    });
+    };
+
+    if (autoClose) {
+      opcoes.showConfirmButton = false;
+      opcoes.timer = 1000; // 1 segundo
+      opcoes.timerProgressBar = true;
+    } else {
+      opcoes.confirmButtonText = 'OK';
+    }
+
+    return Swal.fire(opcoes);
   },
 
   /**
@@ -144,8 +156,6 @@ const Mensagens = {
 
   /**
    * Inicializa Flatpickr em todos os elementos que tiverem data-flatpickr
-   * Ex.: <input type="text" data-flatpickr data-flatpickr-mode="single">
-   * Opções em data-flatpickr-opções (JSON) ou segundo argumento
    */
   iniciarFlatpickr(opcoesPadrao = {}) {
     if (typeof flatpickr === 'undefined') return;
