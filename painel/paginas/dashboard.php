@@ -105,7 +105,7 @@ try {
             </h2>
             <span style="font-size: 0.85rem; color: var(--muted-color); font-weight: 600;">Chamados por mês</span>
         </div>
-        <div class="hd-card__body" style="height: 280px; position: relative;">
+        <div class="hd-card__body" style="min-height: 280px; flex: 1; position: relative;">
             <canvas id="canvasChart"></canvas>
         </div>
     </div>

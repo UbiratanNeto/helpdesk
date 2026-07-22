@@ -82,7 +82,6 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
 
     <!-- Carregamento do script de controle do painel -->
     <script src="assets/js/painel.js"></script>
-
     <!-- Modais do painel (cada um em seu próprio arquivo, ligados pelos links do topbar) -->
     <?php include 'includes/modal-configuracoes.php'; ?>
     <?php include 'includes/modal-perfil.php'; ?>

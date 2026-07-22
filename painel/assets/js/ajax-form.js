@@ -1,15 +1,20 @@
 /**
  * painel/assets/js/ajax-forms.js
- * Intercepta os formulários das modais e exibe o SweetAlert2 usando o objeto global Mensagens
+ * Intercepta os formulários das modais, valida campos obrigatórios e envia via AJAX (Fetch API)
  */
 document.addEventListener('DOMContentLoaded', () => {
 
-    function configurarFormularioAjax(formSelector, modalSelector) {
+    function configurarFormularioAjax(formSelector, modalSelector, callbackValidacao) {
         const form = document.querySelector(formSelector);
         if (!form) return;
 
         form.addEventListener('submit', function(e) {
             e.preventDefault(); // Impede o envio padrão
+
+            // Executa validação personalizada antes de enviar, se houver
+            if (callbackValidacao && !callbackValidacao(this)) {
+                return; // Interrompe se a validação falhar
+            }
 
             const formData = new FormData(this);
             const actionUrl = this.getAttribute('action');
@@ -21,17 +26,13 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.json())
             .then(data => {
                 if (data.ok) {
-                    // Utiliza a função global de sucesso do seu js/mensagens.js
-                    Mensagens.sucesso('Sucesso!', data.msg).then(() => {
-                        // Fecha a modal correspondente
+                    // Sucesso com fechamento automático em 1 segundo
+                    Mensagens.sucesso('Sucesso!', data.msg, true).then(() => {
                         const modal = document.querySelector(modalSelector);
                         if (modal) modal.style.display = 'none';
-
-                        // Recarrega a página para refletir as alterações
                         location.reload();
                     });
                 } else {
-                    // Utiliza a função global de erro do seu js/mensagens.js
                     Mensagens.erro('Atenção', data.msg);
                 }
             })
@@ -42,9 +43,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Ativa para a modal de Configurações
-    configurarFormularioAjax('form[action="scripts/salvar_config.php"]', '#modalConfig');
+    // 1. Configurações: Valida se o "Nome do Sistema" é obrigatório
+    configurarFormularioAjax(
+        'form[action="scripts/salvar_config.php"]', 
+        '#modalConfig', 
+        (form) => {
+            // Ajuste o seletor abaixo ('[name="nome_sistema"]') caso o atributo name do seu input seja diferente
+            const inputNomeSistema = form.querySelector('[name="nome_sistema"]');
+            
+            if (inputNomeSistema && inputNomeSistema.value.trim() === '') {
+                Mensagens.aviso('Campo obrigatório', 'O nome do sistema não pode ficar em branco.');
+                inputNomeSistema.focus();
+                return false; // Retorna falso para cancelar o envio
+            }
+            return true;
+        }
+    );
 
-    // Ativa para a modal de Perfil
-    configurarFormularioAjax('form[action="scripts/salvar_perfil.php"]', '#modalPerfil');
+    // 2. Perfil: Valida se o "Nome Completo" é obrigatório
+    configurarFormularioAjax(
+        'form[action="scripts/salvar_perfil.php"]', 
+        '#modalPerfil', 
+        (form) => {
+            // Ajuste o seletor abaixo ('[name="perfil_nome"]') caso o atributo name do seu input seja diferente
+            const inputNomeCompleto = form.querySelector('[name="perfil_nome"]');
+            
+            if (inputNomeCompleto && inputNomeCompleto.value.trim() === '') {
+                Mensagens.aviso('Campo obrigatório', 'O nome completo não pode ficar em branco.');
+                inputNomeCompleto.focus();
+                return false; // Retorna falso para cancelar o envio
+            }
+            return true;
+        }
+    );
 });

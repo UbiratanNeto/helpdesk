@@ -285,7 +285,7 @@ body {
     grid-template-columns: 1.2fr 1fr;
     gap: 1.5rem;
     width: 100%;
-    align-items: start;
+    align-items: stretch;
 }
 
 
