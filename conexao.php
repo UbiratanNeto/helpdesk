@@ -4,6 +4,19 @@
  * Adaptado para ambiente local XAMPP (Padrão do Curso)
  */
 
+// ===== CARREGA O .env (segredos que não vão pro git) =====
+// safeLoad() não quebra o site se o .env estiver ausente (ex.: variáveis
+// já definidas direto no servidor de produção).
+require_once __DIR__ . '/vendor/autoload.php';
+Dotenv\Dotenv::createImmutable(__DIR__)->safeLoad();
+
+// Disponibiliza a chave de criptografia da senha SMTP como constante,
+// no mesmo formato que painel/funcoes/crypto.php espera (64 chars hex).
+if (!defined('SMTP_SECRET_KEY')) {
+    define('SMTP_SECRET_KEY', $_ENV['SMTP_SECRET_KEY'] ?? getenv('SMTP_SECRET_KEY') ?? '');
+}
+require_once __DIR__ . '/painel/funcoes/crypto.php';
+
 $modo_teste = 'Não';
 
 // ===== FUSO HORÁRIO (LISBOA) =====
@@ -42,6 +55,11 @@ $telefone_sistema = '(31)97527-5084';
 $email_sistema = 'contato@hugocursos.com.br';
 $id_empresa = 0;
 
+// ===== LOGO, ÍCONE E ENDEREÇO (fallback caso ainda não tenham sido enviados/preenchidos) =====
+$logo     = 'sem_foto.png'; // Mesmo arquivo padrão já usado como fallback em uploads/
+$icone    = 'sem_foto.png';
+$endereco = '';
+
 // ==========================================================================
 // 🎨 CORES DO TEMA (Fallback padrão caso não exista configuração salva)
 // ==========================================================================
@@ -67,13 +85,16 @@ if (!isset($_SESSION['config']) || ($_SESSION['config_empresa'] ?? null) !== $id
         if (!$config) {
             // Se não existir, cria o primeiro registro com as cores definidas acima
             $stmt = $pdo->prepare("
-                INSERT INTO config (nome_sistema, telefone_sistema, email_sistema, cor_primaria, cor_secundaria, empresa)
-                VALUES (:nome_sistema, :telefone_sistema, :email_sistema, :cor_primaria, :cor_secundaria, :empresa)
+                INSERT INTO config (nome_sistema, telefone_sistema, email_sistema, logo, icone, endereco, cor_primaria, cor_secundaria, empresa)
+                VALUES (:nome_sistema, :telefone_sistema, :email_sistema, :logo, :icone, :endereco, :cor_primaria, :cor_secundaria, :empresa)
             ");
             $stmt->execute([
                 ':nome_sistema'     => $nome_sistema,
                 ':telefone_sistema' => $telefone_sistema,
                 ':email_sistema'    => $email_sistema,
+                ':logo'             => $logo,
+                ':icone'            => $icone,
+                ':endereco'         => $endereco,
                 ':cor_primaria'     => $cor_primaria,
                 ':cor_secundaria'   => $cor_secundaria,
                 ':empresa'          => $id_empresa,
@@ -120,11 +141,30 @@ if ($config) {
     $email_sistema    = $config['email_sistema']    ?? $email_sistema;
     $id_empresa       = (int) ($config['empresa']   ?? $id_empresa);
 
+    // Logo, ícone e endereço: "?? $logo" só entra em ação se a coluna estiver NULL no banco
+    // (ainda não foi enviado nenhum arquivo/preenchido nenhum endereço)
+    $logo     = $config['logo']     ?? $logo;
+    $icone    = $config['icone']    ?? $icone;
+    $endereco = $config['endereco'] ?? $endereco;
+
     // Dados de SMTP: host/porta/segurança podem ir pro formulário de configurações normalmente.
     // $smtp_senha NUNCA deve ser impresso em HTML — existe aqui só pra uso futuro no envio de e-mails.
     $smtp_host      = $config['smtp_host']      ?? '';
     $smtp_porta     = $config['smtp_porta']     ?? '';
     $smtp_seguranca = $config['smtp_seguranca'] ?? '';
-    $smtp_senha     = $config['smtp_senha']     ?? '';
+
+    // A senha é salva criptografada (AES-256-GCM); aqui já devolvemos o valor descriptografado
+    // pra uso futuro (ex.: enviar e-mail). Um valor salvo ANTES dessa criptografia existir
+    // (texto puro) não decripta — nesse caso caímos de volta pro texto original, com aviso no log.
+    $smtp_senha_criptografada = $config['smtp_senha'] ?? '';
+    $smtp_senha = '';
+    if ($smtp_senha_criptografada !== '') {
+        try {
+            $smtp_senha = smtp_decrypt($smtp_senha_criptografada);
+        } catch (Throwable $e) {
+            error_log('Aviso: smtp_senha no banco não está no formato criptografado esperado (dado antigo?). ' . $e->getMessage());
+            $smtp_senha = $smtp_senha_criptografada;
+        }
+    }
 }
 ?>
