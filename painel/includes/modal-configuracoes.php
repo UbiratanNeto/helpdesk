@@ -3,9 +3,13 @@
  * painel/includes/modal-configuracoes.php
  * Modal "Editar Configurações do Sistema" — acionado pelo link no dropdown do topbar.
  * Depende de variáveis já carregadas em conexao.php/verificar.php:
- * $nome_sistema, $telefone_sistema, $email_sistema, $primary, $secondary,
- * $smtp_host, $smtp_porta, $smtp_seguranca
+ * $nome_sistema, $telefone_sistema, $email_sistema, $endereco, $primary, $secondary,
+ * $smtp_host, $smtp_porta, $smtp_seguranca, $logo, $icone
  */
+$config_logo_arquivo   = basename($logo ?? '');
+$config_logo_existe    = $config_logo_arquivo !== '' && file_exists(__DIR__ . '/../../uploads/' . $config_logo_arquivo);
+$config_icone_arquivo  = basename($icone ?? '');
+$config_icone_existe   = $config_icone_arquivo !== '' && file_exists(__DIR__ . '/../../uploads/' . $config_icone_arquivo);
 ?>
 <!-- Fundo Escurecido da Modal (Invisível por padrão) -->
 <div id="modalConfig" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter: blur(3px);">
@@ -20,7 +24,7 @@
         </div>
 
         <div class="hd-card__body">
-            <form id="formConfiguracoes" action="scripts/salvar_config.php" method="POST">
+            <form id="formConfiguracoes" action="scripts/salvar_config.php" method="POST" enctype="multipart/form-data">
                 <div class="hd-form-grid">
 
                     <h4 class="hd-form-section-title">Dados do Sistema</h4>
@@ -36,6 +40,33 @@
                         <label class="hd-field__label" for="email_sistema">E-mail do Sistema</label>
                         <input type="email" id="email_sistema" name="email_sistema" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($email_sistema ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="E-mail do Sistema">
                     </div>
+                    <div class="hd-field" style="grid-column: 1 / -1;">
+                        <label class="hd-field__label" for="endereco">Endereço</label>
+                        <input type="text" id="endereco" name="endereco" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($endereco ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="Endereço">
+                    </div>
+
+                    <div class="hd-form-divider"></div>
+                    <h4 class="hd-form-section-title">Identidade Visual</h4>
+
+                    <div class="hd-field">
+                        <label class="hd-field__label" for="logo">Logo</label>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <?php if ($config_logo_existe): ?>
+                                <img src="../uploads/<?php echo htmlspecialchars($config_logo_arquivo, ENT_QUOTES, 'UTF-8'); ?>" alt="" style="width: 2.75rem; height: 2.75rem; border-radius: 8px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border-line);">
+                            <?php endif; ?>
+                            <input type="file" id="logo" name="logo" accept=".png,.jpg,.jpeg,.webp" class="hd-field__input hd-field__input--plain" style="flex: 1;">
+                        </div>
+                    </div>
+                    <div class="hd-field">
+                        <label class="hd-field__label" for="icone">Ícone</label>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <?php if ($config_icone_existe): ?>
+                                <img src="../uploads/<?php echo htmlspecialchars($config_icone_arquivo, ENT_QUOTES, 'UTF-8'); ?>" alt="" style="width: 2.75rem; height: 2.75rem; border-radius: 8px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border-line);">
+                            <?php endif; ?>
+                            <input type="file" id="icone" name="icone" accept=".png,.jpg,.jpeg,.webp" class="hd-field__input hd-field__input--plain" style="flex: 1;">
+                        </div>
+                    </div>
+                    <p class="hd-field__hint" style="grid-column: 1 / -1; margin-top: -0.5rem;">PNG, JPG ou WEBP — até 2MB. Deixe em branco para manter a imagem atual.</p>
 
                     <div class="hd-form-divider"></div>
                     <h4 class="hd-form-section-title">Cores do Painel</h4>
