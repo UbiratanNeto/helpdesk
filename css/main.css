@@ -226,6 +226,12 @@ body {
     margin: 0;
 }
 
+.hd-welcome__subtitle {
+    font-size: 0.9rem;
+    color: var(--muted-color);
+    margin: 0.25rem 0 0 0;
+}
+
 /* Grid de Métricas (Responsivo e Alinhado) */
 .hd-metrics-grid {
     display: grid;
@@ -380,6 +386,39 @@ body {
 .hd-badge--open { background-color: #dbeafe; color: #1e40af; }
 .hd-badge--pending { background-color: #fef3c7; color: #92400e; }
 .hd-badge--closed { background-color: #d1fae5; color: #065f46; }
+
+/* Genéricas (ex.: status Ativo/Inativo de um usuário) — nomes neutros pra não
+   confundir com o significado específico de open/pending/closed dos chamados */
+.hd-badge--success { background-color: #d1fae5; color: #065f46; }
+.hd-badge--danger { background-color: #fee2e2; color: #991b1b; }
+
+/* ==========================================================================
+   7a. BOTÕES DE AÇÃO EM LINHAS DE TABELA (ex.: editar/excluir na Gestão de Usuários)
+   ========================================================================== */
+.hd-table__action-btn {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--muted-color);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.hd-table__action-btn:hover {
+    background-color: #f1f5f9;
+    color: var(--text-color);
+}
+
+.hd-table__action-btn--danger:hover {
+    background-color: #fef2f2;
+    color: #ef4444;
+}
 
 
 /* ==========================================================================

@@ -27,7 +27,7 @@
 
   // Centraliza todas as manipulações do DOM em um único evento de carregamento
   document.addEventListener('DOMContentLoaded', function () {
-    
+
     // === ELEMENTOS DO LOGIN ===
     const formLogin = document.querySelector('.login-form');
     const usernameEl = document.getElementById('username');
