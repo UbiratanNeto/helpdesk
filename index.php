@@ -91,17 +91,21 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
 <body>
     <div class="login-container">
         <div class="hd-card login-card">
-            <div class="hd-card__header">
-                <div class="hd-card__brand">
-                    <div class="hd-card__icon" aria-hidden="true">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2Zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2ZM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 class="hd-card__title"><?php echo htmlspecialchars($nome_sistema ?? 'Helpdesk'); ?></h1>
-                        <p class="hd-card__subtitle">Acesse sua conta</p>
-                    </div>
+            <div class="hd-card__header text-center">
+                <!-- Ícone Grande Centralizado no Topo (Estilo Imagem 2) -->
+                <div class="mb-3">
+                    <?php if (!empty($icone) && file_exists(__DIR__ . '/uploads/' . basename($icone))): ?>
+                        <img src="uploads/<?php echo htmlspecialchars($icone, ENT_QUOTES, 'UTF-8'); ?>" alt="Logo Sistema" style="max-width: 140px; height: auto;">
+                    <?php else: ?>
+                        <!-- Fallback: mesmo arquivo padrão já usado em uploads/ pra outras imagens do sistema -->
+                        <img src="uploads/sem_foto.png" alt="Logo Sistema" style="max-width: 140px; height: auto;">
+                    <?php endif; ?>
+                </div>
+
+                <!-- Título e Subtítulo abaixo da Logo -->
+                <div>
+                    <h1 class="hd-card__title"><?php echo htmlspecialchars($nome_sistema ?? 'Helpdesk'); ?></h1>
+                    <p class="hd-card__subtitle">Acesse sua conta</p>
                 </div>
             </div>
 
