@@ -1,129 +1,134 @@
 /**
  * painel/assets/js/usuarios.js
- * Gestão de Usuários: lista, cria, edita e exclui — tudo via fetch, sem jQuery/DataTables
- * (o projeto não carrega nenhuma das duas em nenhuma outra página do painel).
+ * Gestão de Usuários: lista via DataTables (Bootstrap 5 + jQuery), cria/edita/exclui via fetch.
  */
 
-let usuarioEmEdicao = false;
+let tabelaUsuarios;
+let idParaExcluir = null;
 
-document.addEventListener('DOMContentLoaded', function () {
-    const tabela = document.getElementById('corpoTabelaUsuarios');
-    if (!tabela) return; // Este script só faz sentido na página de Usuários
+$(function () {
+    const $tabela = $('#tabelaUsuarios');
+    if ($tabela.length === 0) return; // Este script só faz sentido na página de Usuários
 
-    carregarUsuarios();
-
-    const form = document.getElementById('formUsuario');
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        salvarUsuario(form);
+    tabelaUsuarios = $tabela.DataTable({
+        ajax: {
+            url: 'scripts/listar_usuarios.php',
+            dataSrc: function (json) {
+                if (!json.ok) {
+                    Mensagens.erro('Erro', json.msg || 'Não foi possível carregar os usuários.');
+                    return [];
+                }
+                return json.data;
+            }
+        },
+        columns: [
+            {
+                data: 'foto_url', orderable: false, render: function (url) {
+                    return '<img src="' + url + '" class="rounded-circle" style="width:2.25rem;height:2.25rem;object-fit:cover;" alt="">';
+                }
+            },
+            { data: 'nome' },
+            { data: 'email' },
+            { data: 'telefone', render: function (v) { return v || '-'; } },
+            { data: 'nivel' },
+            {
+                data: 'ativo', render: function (ativo) {
+                    return ativo == 1
+                        ? '<span class="badge bg-success">Ativo</span>'
+                        : '<span class="badge bg-danger">Inativo</span>';
+                }
+            },
+            {
+                data: 'id', orderable: false, className: 'text-end', render: function (id) {
+                    return '<div class="btn-group btn-group-sm">'
+                        + '<button type="button" class="btn btn-outline-primary btn-visualizar-usuario" data-id="' + id + '" title="Visualizar"><i class="fa-solid fa-eye"></i></button>'
+                        + '<button type="button" class="btn btn-outline-secondary btn-editar-usuario" data-id="' + id + '" title="Editar"><i class="fa-solid fa-pen"></i></button>'
+                        + '<button type="button" class="btn btn-outline-danger btn-excluir-usuario" data-id="' + id + '" title="Excluir"><i class="fa-solid fa-trash"></i></button>'
+                        + '</div>';
+                }
+            },
+        ],
+        order: [[1, 'asc']],
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
+        },
     });
 
-    const inputFoto = document.getElementById('usuario_foto');
-    inputFoto.addEventListener('change', function () {
+    // Delegação de eventos: os botões de ação são recriados a cada "draw" do DataTables
+    $tabela.on('click', '.btn-visualizar-usuario', function () {
+        visualizarUsuario($(this).data('id'));
+    });
+    $tabela.on('click', '.btn-editar-usuario', function () {
+        editarUsuario($(this).data('id'));
+    });
+    $tabela.on('click', '.btn-excluir-usuario', function () {
+        excluirUsuario($(this).data('id'));
+    });
+
+    $('#formUsuario').on('submit', function (e) {
+        e.preventDefault();
+        salvarUsuario(this);
+    });
+
+    $('#usuario_foto').on('change', function () {
         if (!this.files || !this.files[0]) return;
         const leitor = new FileReader();
         leitor.onload = function (e) {
-            document.getElementById('previewFotoUsuario').src = e.target.result;
+            $('#previewFotoUsuario').attr('src', e.target.result);
         };
         leitor.readAsDataURL(this.files[0]);
     });
+
+    $('#btnConfirmarExclusao').on('click', function () {
+        confirmarExclusaoUsuario();
+    });
 });
 
-function carregarUsuarios() {
-    const tabela = document.getElementById('corpoTabelaUsuarios');
-    tabela.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--muted-color); padding: 2rem;">Carregando...</td></tr>';
-
-    fetch('scripts/listar_usuarios.php')
-        .then(function (resposta) { return resposta.json(); })
-        .then(function (dados) {
-            if (!dados.ok || dados.data.length === 0) {
-                tabela.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--muted-color); padding: 2rem;">Nenhum usuário encontrado.</td></tr>';
-                return;
-            }
-            tabela.innerHTML = '';
-            dados.data.forEach(function (usuario) {
-                tabela.appendChild(criarLinhaUsuario(usuario));
-            });
-        })
-        .catch(function () {
-            tabela.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #ef4444; padding: 2rem;">Erro ao carregar usuários.</td></tr>';
-        });
-}
-
-function criarLinhaUsuario(usuario) {
-    const tr = document.createElement('tr');
-
-    // Foto
-    const tdFoto = document.createElement('td');
-    const img = document.createElement('img');
-    img.src = usuario.foto_url;
-    img.alt = '';
-    img.style.cssText = 'width: 2.25rem; height: 2.25rem; border-radius: 50%; object-fit: cover;';
-    tdFoto.appendChild(img);
-
-    // Nome, e-mail, telefone, nível (texto simples, seguro contra HTML no dado)
-    const tdNome = document.createElement('td');
-    tdNome.textContent = usuario.nome;
-
-    const tdEmail = document.createElement('td');
-    tdEmail.textContent = usuario.email;
-
-    const tdTelefone = document.createElement('td');
-    tdTelefone.textContent = usuario.telefone || '-';
-
-    const tdNivel = document.createElement('td');
-    tdNivel.textContent = usuario.nivel;
-
-    // Status (badge reaproveitado do sistema — mesmas classes usadas nos chamados do dashboard)
-    const tdStatus = document.createElement('td');
-    const badge = document.createElement('span');
-    badge.className = 'hd-badge ' + (usuario.ativo == 1 ? 'hd-badge--success' : 'hd-badge--danger');
-    badge.textContent = usuario.ativo == 1 ? 'Ativo' : 'Inativo';
-    tdStatus.appendChild(badge);
-
-    // Ações
-    const tdAcoes = document.createElement('td');
-    tdAcoes.style.textAlign = 'right';
-
-    const btnEditar = document.createElement('button');
-    btnEditar.type = 'button';
-    btnEditar.className = 'hd-table__action-btn';
-    btnEditar.title = 'Editar';
-    btnEditar.innerHTML = '<i class="fa-solid fa-pen"></i>';
-    btnEditar.addEventListener('click', function () { editarUsuario(usuario.id); });
-
-    const btnExcluir = document.createElement('button');
-    btnExcluir.type = 'button';
-    btnExcluir.className = 'hd-table__action-btn hd-table__action-btn--danger';
-    btnExcluir.title = 'Excluir';
-    btnExcluir.innerHTML = '<i class="fa-solid fa-trash"></i>';
-    btnExcluir.addEventListener('click', function () { excluirUsuario(usuario.id); });
-
-    tdAcoes.appendChild(btnEditar);
-    tdAcoes.appendChild(btnExcluir);
-
-    tr.append(tdFoto, tdNome, tdEmail, tdTelefone, tdNivel, tdStatus, tdAcoes);
-    return tr;
-}
-
-function abrirModalUsuario() {
-    document.getElementById('modalUsuario').style.display = 'flex';
-}
-
-function fecharModalUsuario() {
-    document.getElementById('modalUsuario').style.display = 'none';
-}
-
 function novoUsuario() {
-    usuarioEmEdicao = false;
     const form = document.getElementById('formUsuario');
     form.reset();
-    document.getElementById('usuario_id').value = '';
-    document.getElementById('modalUsuarioTitulo').textContent = 'Cadastrar Usuário';
-    document.getElementById('usuarioSenhaHint').textContent = '(mínimo 6 caracteres)';
-    document.getElementById('usuario_senha').setAttribute('required', 'required');
-    document.getElementById('previewFotoUsuario').src = '../uploads/perfil/sem_foto.png';
-    abrirModalUsuario();
+    $('#usuario_id').val('');
+    $('#modalUsuarioLabel').text('Cadastrar Usuário');
+    $('#usuarioSenhaHint').text('(mínimo 6 caracteres)');
+    $('#usuario_senha').prop('required', true);
+    $('#previewFotoUsuario').attr('src', '../uploads/perfil/sem_foto.png');
+    bootstrap.Modal.getOrCreateInstance('#modalUsuario').show();
+}
+
+function visualizarUsuario(id) {
+    fetch('scripts/buscar_usuario.php?id=' + encodeURIComponent(id))
+        .then(function (resposta) { return resposta.json(); })
+        .then(function (dados) {
+            if (!dados.ok) {
+                Mensagens.erro('Erro', dados.msg);
+                return;
+            }
+
+            const u = dados.data;
+            const ativo = u.ativo == 1;
+
+            $('#verFotoUsuario').attr('src', u.foto_url);
+            $('#verNome').text(u.nome || '-');
+            $('#verStatus').text(ativo ? 'Ativo' : 'Inativo')
+                .removeClass('bg-success bg-danger')
+                .addClass(ativo ? 'bg-success' : 'bg-danger');
+            $('#verEmail').text(u.email || '-');
+            $('#verTelefone').text(u.telefone || '-');
+            $('#verCpf').text(u.cpf || '-');
+            $('#verNivel').text(u.nivel || '-');
+            $('#verCep').text(u.cep || '-');
+            $('#verEstado').text(u.estado || '-');
+            $('#verCidade').text(u.cidade || '-');
+            $('#verEndereco').text(u.endereco || '-');
+            $('#verNumero').text(u.numero || '-');
+            $('#verBairro').text(u.bairro || '-');
+            $('#verComplemento').text(u.complemento || '-');
+
+            bootstrap.Modal.getOrCreateInstance('#modalVisualizarUsuario').show();
+        })
+        .catch(function () {
+            Mensagens.erro('Erro', 'Não foi possível carregar os dados do usuário.');
+        });
 }
 
 function editarUsuario(id) {
@@ -135,33 +140,30 @@ function editarUsuario(id) {
                 return;
             }
 
-            usuarioEmEdicao = true;
             const u = dados.data;
 
-            document.getElementById('usuario_id').value = u.id;
-            document.getElementById('usuario_nome').value = u.nome || '';
-            document.getElementById('usuario_email').value = u.email || '';
-            document.getElementById('usuario_telefone').value = u.telefone || '';
-            document.getElementById('usuario_cpf').value = u.cpf || '';
-            document.getElementById('usuario_cep').value = u.cep || '';
-            document.getElementById('usuario_estado').value = u.estado || '';
-            document.getElementById('usuario_cidade').value = u.cidade || '';
-            document.getElementById('usuario_bairro').value = u.bairro || '';
-            document.getElementById('usuario_endereco').value = u.endereco || '';
-            document.getElementById('usuario_numero').value = u.numero || '';
-            document.getElementById('usuario_complemento').value = u.complemento || '';
-            document.getElementById('usuario_nivel').value = u.nivel || 'Usuário';
-            document.getElementById('usuario_ativo').value = String(u.ativo);
+            $('#usuario_id').val(u.id);
+            $('#usuario_nome').val(u.nome || '');
+            $('#usuario_email').val(u.email || '');
+            $('#usuario_telefone').val(u.telefone || '');
+            $('#usuario_cpf').val(u.cpf || '');
+            $('#usuario_cep').val(u.cep || '');
+            $('#usuario_estado').val(u.estado || '');
+            $('#usuario_cidade').val(u.cidade || '');
+            $('#usuario_bairro').val(u.bairro || '');
+            $('#usuario_endereco').val(u.endereco || '');
+            $('#usuario_numero').val(u.numero || '');
+            $('#usuario_complemento').val(u.complemento || '');
+            $('#usuario_nivel').val(u.nivel || 'Usuário');
+            $('#usuario_ativo').val(String(u.ativo));
 
-            document.getElementById('modalUsuarioTitulo').textContent = 'Editar Usuário';
-            document.getElementById('usuarioSenhaHint').textContent = '(deixe em branco para não alterar)';
-            const inputSenha = document.getElementById('usuario_senha');
-            inputSenha.removeAttribute('required');
-            inputSenha.value = '';
+            $('#modalUsuarioLabel').text('Editar Usuário');
+            $('#usuarioSenhaHint').text('(deixe em branco para não alterar)');
+            $('#usuario_senha').prop('required', false).val('');
 
-            document.getElementById('previewFotoUsuario').src = u.foto_url;
+            $('#previewFotoUsuario').attr('src', u.foto_url);
 
-            abrirModalUsuario();
+            bootstrap.Modal.getOrCreateInstance('#modalUsuario').show();
         })
         .catch(function () {
             Mensagens.erro('Erro', 'Não foi possível carregar os dados do usuário.');
@@ -169,22 +171,40 @@ function editarUsuario(id) {
 }
 
 function excluirUsuario(id) {
-    if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+    idParaExcluir = id;
+    bootstrap.Modal.getOrCreateInstance('#modalConfirmarExclusao').show();
+}
+
+function confirmarExclusaoUsuario() {
+    if (!idParaExcluir) return;
+
+    const botao = document.getElementById('btnConfirmarExclusao');
+    const textoOriginal = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Excluindo...';
 
     fetch('scripts/excluir_usuario.php', {
         method: 'POST',
-        body: new URLSearchParams({ id: id })
+        body: new URLSearchParams({ id: idParaExcluir })
     })
         .then(function (resposta) { return resposta.json(); })
         .then(function (dados) {
+            bootstrap.Modal.getOrCreateInstance('#modalConfirmarExclusao').hide();
             if (dados.ok) {
-                carregarUsuarios();
+                tabelaUsuarios.ajax.reload(null, false);
+                Mensagens.sucesso('Sucesso!', dados.msg);
             } else {
                 Mensagens.erro('Erro', dados.msg);
             }
         })
         .catch(function () {
+            bootstrap.Modal.getOrCreateInstance('#modalConfirmarExclusao').hide();
             Mensagens.erro('Erro de conexão', 'Não foi possível excluir agora. Tente novamente.');
+        })
+        .finally(function () {
+            idParaExcluir = null;
+            botao.disabled = false;
+            botao.textContent = textoOriginal;
         });
 }
 
@@ -201,8 +221,8 @@ function salvarUsuario(form) {
         .then(function (resposta) { return resposta.json(); })
         .then(function (dados) {
             if (dados.ok) {
-                fecharModalUsuario();
-                carregarUsuarios();
+                bootstrap.Modal.getOrCreateInstance('#modalUsuario').hide();
+                tabelaUsuarios.ajax.reload(null, false);
                 Mensagens.sucesso('Sucesso!', dados.msg);
             } else {
                 Mensagens.erro('Atenção', dados.msg);
