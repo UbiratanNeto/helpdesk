@@ -14,7 +14,7 @@
             <i class="fa-solid fa-users" style="color: var(--cor-primaria); margin-right: 0.5rem;"></i>
             Usuários
         </h2>
-        <button type="button" class="hd-btn hd-btn--primary hd-btn--sm" onclick="novoUsuario()">
+        <button type="button" class="hd-btn hd-btn--primary hd-btn--sm" onclick="novo()">
             <i class="fa-solid fa-plus" style="margin-right: 0.4rem;"></i>Novo Usuário
         </button>
     </div>

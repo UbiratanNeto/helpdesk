@@ -1,16 +1,20 @@
 /**
  * painel/assets/js/usuarios.js
  * Gestão de Usuários: lista via DataTables (Bootstrap 5 + jQuery), cria/edita/exclui via fetch.
+ *
+ * Funções globais (novo/editar/excluir/salvar/visualizar), sem namespace: só carregamos este
+ * arquivo na página de Usuários, então não há risco de colidir com o mesmo padrão em outras
+ * páginas (chamados.js, clientes.js etc. terão suas próprias versões dessas funções).
  */
 
-let tabelaUsuarios;
+let tabela;
 let idParaExcluir = null;
 
 $(function () {
     const $tabela = $('#tabelaUsuarios');
     if ($tabela.length === 0) return; // Este script só faz sentido na página de Usuários
 
-    tabelaUsuarios = $tabela.DataTable({
+    tabela = $tabela.DataTable({
         ajax: {
             url: 'scripts/listar_usuarios.php',
             dataSrc: function (json) {
@@ -41,9 +45,9 @@ $(function () {
             {
                 data: 'id', orderable: false, className: 'text-end', render: function (id) {
                     return '<div class="btn-group btn-group-sm">'
-                        + '<button type="button" class="btn btn-outline-primary btn-visualizar-usuario" data-id="' + id + '" title="Visualizar"><i class="fa-solid fa-eye"></i></button>'
-                        + '<button type="button" class="btn btn-outline-secondary btn-editar-usuario" data-id="' + id + '" title="Editar"><i class="fa-solid fa-pen"></i></button>'
-                        + '<button type="button" class="btn btn-outline-danger btn-excluir-usuario" data-id="' + id + '" title="Excluir"><i class="fa-solid fa-trash"></i></button>'
+                        + '<button type="button" class="btn btn-outline-primary btn-visualizar" data-id="' + id + '" title="Visualizar"><i class="fa-solid fa-eye"></i></button>'
+                        + '<button type="button" class="btn btn-outline-secondary btn-editar" data-id="' + id + '" title="Editar"><i class="fa-solid fa-pen"></i></button>'
+                        + '<button type="button" class="btn btn-outline-danger btn-excluir" data-id="' + id + '" title="Excluir"><i class="fa-solid fa-trash"></i></button>'
                         + '</div>';
                 }
             },
@@ -55,19 +59,19 @@ $(function () {
     });
 
     // Delegação de eventos: os botões de ação são recriados a cada "draw" do DataTables
-    $tabela.on('click', '.btn-visualizar-usuario', function () {
-        visualizarUsuario($(this).data('id'));
+    $tabela.on('click', '.btn-visualizar', function () {
+        visualizar($(this).data('id'));
     });
-    $tabela.on('click', '.btn-editar-usuario', function () {
-        editarUsuario($(this).data('id'));
+    $tabela.on('click', '.btn-editar', function () {
+        editar($(this).data('id'));
     });
-    $tabela.on('click', '.btn-excluir-usuario', function () {
-        excluirUsuario($(this).data('id'));
+    $tabela.on('click', '.btn-excluir', function () {
+        excluir($(this).data('id'));
     });
 
     $('#formUsuario').on('submit', function (e) {
         e.preventDefault();
-        salvarUsuario(this);
+        salvar(this);
     });
 
     $('#usuario_foto').on('change', function () {
@@ -80,11 +84,11 @@ $(function () {
     });
 
     $('#btnConfirmarExclusao').on('click', function () {
-        confirmarExclusaoUsuario();
+        confirmarExclusao();
     });
 });
 
-function novoUsuario() {
+function novo() {
     const form = document.getElementById('formUsuario');
     form.reset();
     $('#usuario_id').val('');
@@ -95,7 +99,7 @@ function novoUsuario() {
     bootstrap.Modal.getOrCreateInstance('#modalUsuario').show();
 }
 
-function visualizarUsuario(id) {
+function visualizar(id) {
     fetch('scripts/buscar_usuario.php?id=' + encodeURIComponent(id))
         .then(function (resposta) { return resposta.json(); })
         .then(function (dados) {
@@ -131,7 +135,7 @@ function visualizarUsuario(id) {
         });
 }
 
-function editarUsuario(id) {
+function editar(id) {
     fetch('scripts/buscar_usuario.php?id=' + encodeURIComponent(id))
         .then(function (resposta) { return resposta.json(); })
         .then(function (dados) {
@@ -170,12 +174,12 @@ function editarUsuario(id) {
         });
 }
 
-function excluirUsuario(id) {
+function excluir(id) {
     idParaExcluir = id;
     bootstrap.Modal.getOrCreateInstance('#modalConfirmarExclusao').show();
 }
 
-function confirmarExclusaoUsuario() {
+function confirmarExclusao() {
     if (!idParaExcluir) return;
 
     const botao = document.getElementById('btnConfirmarExclusao');
@@ -191,7 +195,7 @@ function confirmarExclusaoUsuario() {
         .then(function (dados) {
             bootstrap.Modal.getOrCreateInstance('#modalConfirmarExclusao').hide();
             if (dados.ok) {
-                tabelaUsuarios.ajax.reload(null, false);
+                tabela.ajax.reload(null, false);
                 Mensagens.sucesso('Sucesso!', dados.msg);
             } else {
                 Mensagens.erro('Erro', dados.msg);
@@ -208,7 +212,7 @@ function confirmarExclusaoUsuario() {
         });
 }
 
-function salvarUsuario(form) {
+function salvar(form) {
     const botao = document.getElementById('btnSalvarUsuario');
     const textoOriginal = botao.textContent;
     botao.disabled = true;
@@ -222,7 +226,7 @@ function salvarUsuario(form) {
         .then(function (dados) {
             if (dados.ok) {
                 bootstrap.Modal.getOrCreateInstance('#modalUsuario').hide();
-                tabelaUsuarios.ajax.reload(null, false);
+                tabela.ajax.reload(null, false);
                 Mensagens.sucesso('Sucesso!', dados.msg);
             } else {
                 Mensagens.erro('Atenção', dados.msg);
