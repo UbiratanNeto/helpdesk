@@ -91,6 +91,13 @@ body {
     display: none;
 }
 
+/* Com a sidebar minimizada, esconde a seta do grupo e o submenu inteiro —
+   só faz sentido ver "Categorias/Setores/Prioridades" com o texto visível */
+.hd-layout--sidebar-collapsed .hd-layout__sidebar .hd-sidebar__chevron,
+.hd-layout--sidebar-collapsed .hd-layout__sidebar .hd-sidebar__submenu {
+    display: none;
+}
+
 .hd-layout--sidebar-collapsed .hd-layout__sidebar .hd-sidebar__brand {
     justify-content: center;
     padding: 1.5rem 0;
@@ -158,6 +165,77 @@ body {
 
 /* Estado Ativo do Menu Lateral: retângulo arredondado suave, sem borda */
 .hd-sidebar__item--active .hd-sidebar__link {
+    color: #ffffff;
+    background-color: var(--helpdesk-sidebar-active);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   3a. GRUPO DE MENU COM SUBMENU (ex.: "Cadastros") — reaproveitável pra
+   qualquer grupo futuro via data-submenu/data-submenu-content
+   ========================================================================== */
+
+/* O botão do grupo usa a mesma cara do link normal, mas é um <button> */
+.hd-sidebar__group-toggle {
+    width: 100%;
+    background: none;
+    border: none;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+}
+
+/* Seta que indica aberto/fechado */
+.hd-sidebar__chevron {
+    margin-left: auto;
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.hd-sidebar__group-toggle[aria-expanded="true"] .hd-sidebar__chevron {
+    transform: rotate(180deg);
+}
+
+/* Destaque discreto no cabeçalho do grupo quando uma página filha está ativa
+   (mais sutil que o azul cheio do item ativo — o item ativo de verdade é o
+   submenu-filho, então aqui é só um indicativo de "a página atual está aqui dentro") */
+.hd-sidebar__group--active > .hd-sidebar__group-toggle {
+    color: #ffffff;
+}
+
+.hd-sidebar__submenu {
+    list-style: none;
+    margin: 0.25rem 0 0.5rem;
+    padding: 0;
+}
+
+.hd-sidebar__subitem {
+    margin-bottom: 0.15rem;
+}
+
+.hd-sidebar__sublink {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0.75rem 0 1.5rem;
+    padding: 0.6rem 1rem;
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.88rem;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.hd-sidebar__sublink:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Reaproveita o mesmo modificador --active do menuAtivo(), agora no <li> do submenu */
+.hd-sidebar__subitem.hd-sidebar__item--active .hd-sidebar__sublink {
     color: #ffffff;
     background-color: var(--helpdesk-sidebar-active);
     font-weight: 600;
