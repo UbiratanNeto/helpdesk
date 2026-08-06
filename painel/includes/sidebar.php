@@ -15,6 +15,17 @@ $nivel_usuario_atual = strtolower($_SESSION['nivel'] ?? $_SESSION['cargo'] ?? ''
 function menuAtivo($pagina, $atual) {
     return $pagina === $atual ? 'hd-sidebar__item--active' : '';
 }
+
+// Mesma ideia do menuAtivo(), mas pra grupos com submenu: destaca o cabeçalho
+// do grupo (ex.: "Cadastros") quando a página atual é uma das filhas dele.
+function grupoAtivo(array $paginasFilhas, $atual) {
+    return in_array($atual, $paginasFilhas, true) ? 'hd-sidebar__group--active' : '';
+}
+
+// Grupo "Cadastros": lista de páginas-filhas usada tanto pro destaque quanto
+// pra decidir se o submenu já nasce aberto (quando você está numa delas).
+$cadastrosPages = ['categorias', 'setores', 'cargos'];
+$cadastrosOpen  = in_array($atual, $cadastrosPages, true);
 ?>
 <!-- Sidebar (.hd-layout__sidebar) -->
 <aside class="hd-layout__sidebar">
@@ -35,6 +46,40 @@ function menuAtivo($pagina, $atual) {
                 </a>
             </li>
             
+            <!-- Item: Cadastros (grupo com submenu — mesmo padrão data-submenu/data-submenu-content
+                 reaproveitável pra qualquer outro grupo futuro, sem depender de Bootstrap) -->
+            <li class="hd-sidebar__item hd-sidebar__item--group <?php echo grupoAtivo($cadastrosPages, $atual); ?>">
+                <button type="button"
+                        class="hd-sidebar__link hd-sidebar__group-toggle"
+                        data-submenu="cadastros"
+                        aria-expanded="<?php echo $cadastrosOpen ? 'true' : 'false'; ?>">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span>Cadastros</span>
+                    <i class="fa-solid fa-chevron-down hd-sidebar__chevron" aria-hidden="true"></i>
+                </button>
+
+                <ul class="hd-sidebar__submenu" data-submenu-content="cadastros" <?php echo $cadastrosOpen ? '' : 'hidden'; ?>>
+                    <li class="hd-sidebar__subitem <?php echo menuAtivo('categorias', $atual); ?>">
+                        <a href="categorias" class="hd-sidebar__sublink">
+                            <i class="fa-solid fa-tags"></i>
+                            <span>Categorias</span>
+                        </a>
+                    </li>
+                    <li class="hd-sidebar__subitem <?php echo menuAtivo('setores', $atual); ?>">
+                        <a href="setores" class="hd-sidebar__sublink">
+                            <i class="fa-solid fa-sitemap"></i>
+                            <span>Setores</span>
+                        </a>
+                    </li>
+                    <li class="hd-sidebar__subitem <?php echo menuAtivo('cargos', $atual); ?>">
+                        <a href="cargos" class="hd-sidebar__sublink">
+                            <i class="fa-solid fa-briefcase"></i>
+                            <span>Cargos</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
             <!-- Item: Chamados -->
             <li class="hd-sidebar__item <?php echo menuAtivo('chamados', $atual); ?>">
                 <a href="chamados" class="hd-sidebar__link">

@@ -59,7 +59,7 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
                 // Lista de páginas permitidas: qualquer valor de ?p= fora desta lista
                 // é ignorado, mesmo que o texto pareça um caminho de arquivo válido.
                 // Isso evita Local File Inclusion (ex.: ?p=../../conexao).
-                $paginas_permitidas = ['dashboard', 'chamados', 'clientes', 'usuarios', 'relatorios', 'configuracoes'];
+                $paginas_permitidas = ['dashboard', 'chamados', 'clientes', 'usuarios', 'relatorios', 'configuracoes', 'categorias', 'setores', 'cargos'];
 
                 if (!in_array($pagina, $paginas_permitidas, true)) {
                     $pagina = 'dashboard';

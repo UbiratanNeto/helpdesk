@@ -27,4 +27,21 @@ document.addEventListener('DOMContentLoaded', () => {
             app.classList.add('hd-layout--sidebar-collapsed');
         }
     }
+
+    // Alterna qualquer grupo de menu com submenu (ex.: "Cadastros"). Genérico:
+    // funciona pra qualquer grupo futuro que siga o mesmo par de atributos
+    // data-submenu (no botão) / data-submenu-content (na lista), sem precisar
+    // de código novo aqui. O estado inicial (aberto/fechado) já vem pronto do
+    // PHP (variável $xxxOpen no sidebar.php), então aqui só cuidamos do clique.
+    document.querySelectorAll('.hd-sidebar__group-toggle').forEach((botao) => {
+        botao.addEventListener('click', () => {
+            const nomeGrupo = botao.getAttribute('data-submenu');
+            const submenu = document.querySelector(`[data-submenu-content="${nomeGrupo}"]`);
+            if (!submenu) return;
+
+            const vaiAbrir = submenu.hasAttribute('hidden');
+            submenu.toggleAttribute('hidden', !vaiAbrir);
+            botao.setAttribute('aria-expanded', vaiAbrir ? 'true' : 'false');
+        });
+    });
 });
