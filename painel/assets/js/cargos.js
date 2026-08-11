@@ -1,11 +1,12 @@
 /**
  * painel/assets/js/cargos.js
  * Gestão de Cargos: lista via DataTables (Bootstrap 5 + jQuery), cria/edita/exclui via fetch.
+ * Cada cargo agora também carrega "acesso_total" + a lista de menus permitidos
+ * (painel/includes/menus.php), por isso editar() busca em scripts/cargos/buscar.php
+ * em vez de ler só a linha do DataTables.
  *
  * Mesmas funções globais genéricas de usuarios.js (novo/editar/excluir/salvar) — só carregamos
  * este arquivo na página de Cargos, então não colide com o mesmo padrão em outras páginas.
- * Como o cargo só tem "nome", editar() lê o dado direto da linha do DataTables (já carregado
- * no cliente), sem precisar de um endpoint buscar_cargo.php à parte.
  */
 
 let tabela;
@@ -17,7 +18,7 @@ $(function () {
 
     tabela = $tabela.DataTable({
         ajax: {
-            url: 'scripts/listar_cargos.php',
+            url: 'scripts/cargos/listar.php',
             dataSrc: function (json) {
                 if (!json.ok) {
                     Mensagens.erro('Erro', json.msg || 'Não foi possível carregar os cargos.');
@@ -59,28 +60,67 @@ $(function () {
     $('#btnConfirmarExclusao').on('click', function () {
         confirmarExclusao();
     });
+
+    // "Acesso total" desabilita o checklist individual — não faz sentido escolher
+    // menus específicos quando o cargo já vê tudo.
+    $('#cargo_acesso_total').on('change', function () {
+        alternarChecklistPermissoes(this.checked);
+    });
 });
+
+/**
+ * Habilita/desabilita os checkboxes de permissão. Desabilitado = não vai no FormData,
+ * então salvar um cargo com "Acesso total" ligado limpa as permissões individuais dele
+ * no banco — o que não tem problema, já que acesso_total ignora essa lista mesmo.
+ */
+function alternarChecklistPermissoes(desabilitar) {
+    document.querySelectorAll('.permissao-checkbox').forEach(function (checkbox) {
+        checkbox.disabled = desabilitar;
+    });
+    document.getElementById('areaPermissoesMenus').classList.toggle('opacity-50', desabilitar);
+}
 
 function novo() {
     const form = document.getElementById('formCargo');
     form.reset();
     $('#cargo_id').val('');
     $('#modalCargoLabel').text('Cadastrar Cargo');
+    alternarChecklistPermissoes(false);
+
+    // Sem essa página marcada, um cargo recém-criado ficaria sem enxergar nada no sistema
+    const dashboardCheckbox = document.getElementById('permissao_dashboard');
+    if (dashboardCheckbox) dashboardCheckbox.checked = true;
+
     bootstrap.Modal.getOrCreateInstance('#modalCargo').show();
 }
 
 function editar(id) {
-    const linha = tabela.rows().data().toArray().find(function (item) { return item.id == id; });
-    if (!linha) {
-        Mensagens.erro('Erro', 'Cargo não encontrado.');
-        return;
-    }
+    fetch('scripts/cargos/buscar.php?id=' + encodeURIComponent(id))
+        .then(function (resposta) { return resposta.json(); })
+        .then(function (dados) {
+            if (!dados.ok) {
+                Mensagens.erro('Erro', dados.msg);
+                return;
+            }
 
-    $('#cargo_id').val(linha.id);
-    $('#cargo_nome').val(linha.nome || '');
-    $('#modalCargoLabel').text('Editar Cargo');
+            const c = dados.data;
 
-    bootstrap.Modal.getOrCreateInstance('#modalCargo').show();
+            $('#cargo_id').val(c.id);
+            $('#cargo_nome').val(c.nome || '');
+            $('#modalCargoLabel').text('Editar Cargo');
+
+            document.querySelectorAll('.permissao-checkbox').forEach(function (checkbox) {
+                checkbox.checked = c.permissoes.indexOf(checkbox.value) !== -1;
+            });
+
+            document.getElementById('cargo_acesso_total').checked = !!c.acesso_total;
+            alternarChecklistPermissoes(!!c.acesso_total);
+
+            bootstrap.Modal.getOrCreateInstance('#modalCargo').show();
+        })
+        .catch(function () {
+            Mensagens.erro('Erro', 'Não foi possível carregar os dados do cargo.');
+        });
 }
 
 function excluir(id) {
@@ -96,7 +136,7 @@ function confirmarExclusao() {
     botao.disabled = true;
     botao.textContent = 'Excluindo...';
 
-    fetch('scripts/excluir_cargo.php', {
+    fetch('scripts/cargos/excluir.php', {
         method: 'POST',
         body: new URLSearchParams({ id: idParaExcluir })
     })
@@ -127,7 +167,7 @@ function salvar(form) {
     botao.disabled = true;
     botao.textContent = 'Salvando...';
 
-    fetch('scripts/salvar_cargo.php', {
+    fetch('scripts/cargos/salvar.php', {
         method: 'POST',
         body: new FormData(form)
     })

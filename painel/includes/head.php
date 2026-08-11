@@ -23,12 +23,18 @@ if (!preg_match('/^#[a-fA-F0-9]{3,8}$/', $secondary)) {
 <!-- Importação do FontAwesome (Ícones) -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<!-- Bootstrap 5 + DataTables: carregados só nas páginas que realmente usam (Usuários, Cargos),
+<!-- Bootstrap 5 + DataTables: carregados só nas páginas que realmente usam (Usuários, Cargos, Clientes),
      igual ao Chart.js abaixo — o resto do painel continua hd-*/vanilla JS. -->
-<?php if (in_array($pagina ?? '', ['usuarios', 'cargos'], true)): ?>
+<?php if (in_array($pagina ?? '', ['usuarios', 'cargos', 'clientes'], true)): ?>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 <link href="https://cdn.datatables.net/1.13.11/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <?php endif; ?>
+
+<!-- Select2 (+ tema Bootstrap 5): CSS carregado em todo o painel (só estiliza as
+     próprias classes .select2-*, não interfere no hd-* das páginas que ainda não usam).
+     O JS do Select2 continua sendo carregado só onde algum <select> é inicializado com ele. -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
 
 <!-- O seu arquivo ÚNICO de estilos, localizado na raiz de estilos do Helpdesk -->
 <link rel="stylesheet" href="../css/main.css">

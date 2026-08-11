@@ -1,34 +1,35 @@
 <?php
 /**
- * Gestão de Usuários — lista (DataTables), cria, edita e exclui usuários com acesso ao sistema.
+ * Gestão de Clientes — lista (DataTables), cria, edita e exclui clientes.
+ * Mesmo padrão Bootstrap 5 + DataTables + funções globais genéricas de Usuários/Cargos.
  */
 ?>
 <div class="hd-welcome">
-    <h1 class="hd-welcome__title">Gestão de Usuários</h1>
-    <p class="hd-welcome__subtitle">Gerencie todos os usuários com acesso ao sistema</p>
+    <h1 class="hd-welcome__title">Gestão de Clientes</h1>
+    <p class="hd-welcome__subtitle">Gerencie os clientes que abrem chamados no sistema</p>
 </div>
 
 <div class="hd-card">
     <div class="hd-card__header hd-card__header--row">
         <h2 class="hd-card__title" style="font-size: 1.15rem;">
             <i class="fa-solid fa-users" style="color: var(--cor-primaria); margin-right: 0.5rem;"></i>
-            Usuários
+            Clientes
         </h2>
         <button type="button" class="hd-btn hd-btn--primary hd-btn--sm" onclick="novo()">
-            <i class="fa-solid fa-plus" style="margin-right: 0.4rem;"></i>Novo Usuário
+            <i class="fa-solid fa-plus" style="margin-right: 0.4rem;"></i>Novo Cliente
         </button>
     </div>
     <div class="hd-card__body">
         <div class="table-responsive">
-            <table id="tabelaUsuarios" class="table table-striped table-hover align-middle" style="width: 100%;">
+            <table id="tabelaClientes" class="table table-striped table-hover align-middle" style="width: 100%;">
                 <thead>
                     <tr>
                         <th>Foto</th>
                         <th>Nome</th>
                         <th>E-mail</th>
                         <th>Telefone</th>
-                        <th>Nível</th>
-                        <th>Status</th>
+                        <th>Tipo</th>
+                        <th>Ativo</th>
                         <th class="text-end">Ações</th>
                     </tr>
                 </thead>
@@ -38,61 +39,58 @@
     </div>
 </div>
 
-<!-- Modal Usuário (Cadastrar / Editar) — componente Modal do Bootstrap 5 -->
-<div class="modal fade" id="modalUsuario" tabindex="-1" aria-labelledby="modalUsuarioLabel" aria-hidden="true">
+<!-- Modal Cliente (Cadastrar / Editar) -->
+<div class="modal fade" id="modalCliente" tabindex="-1" aria-labelledby="modalClienteLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
-            <form id="formUsuario" enctype="multipart/form-data">
+            <form id="formCliente" enctype="multipart/form-data">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalUsuarioLabel">Cadastrar Usuário</h5>
+                    <h5 class="modal-title" id="modalClienteLabel">Cadastrar Cliente</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
 
                 <div class="modal-body">
-                    <input type="hidden" id="usuario_id" name="id">
+                    <input type="hidden" id="cliente_id" name="id">
 
-                    <h6 class="text-uppercase text-muted small fw-bold mb-3">Dados Pessoais</h6>
                     <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="cliente_nome">Nome *</label>
+                            <input type="text" id="cliente_nome" name="nome" class="form-control" required maxlength="120">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="cliente_telefone">Telefone</label>
+                            <input type="text" id="cliente_telefone" name="telefone" class="form-control" placeholder="(00) 00000-0000">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="cliente_cpf_cnpj">CPF/CNPJ</label>
+                            <input type="text" id="cliente_cpf_cnpj" name="cpf_cnpj" class="form-control" maxlength="20">
+                        </div>
+
+                        <div class="col-md-5">
+                            <label class="form-label" for="cliente_email">E-mail</label>
+                            <input type="email" id="cliente_email" name="email" class="form-control" maxlength="120">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="cliente_tipo">Tipo</label>
+                            <select id="cliente_tipo" name="tipo" class="form-select">
+                                <option value="Pessoa Física">Pessoa Física</option>
+                                <option value="Pessoa Jurídica">Pessoa Jurídica</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="cliente_ativo">Ativo</label>
+                            <select id="cliente_ativo" name="ativo" class="form-select">
+                                <option value="Sim">Sim</option>
+                                <option value="Não">Não</option>
+                            </select>
+                        </div>
+
                         <div class="col-12 d-flex align-items-center gap-3">
-                            <img id="previewFotoUsuario" src="../uploads/perfil/sem_foto.png" alt="" class="rounded-circle" style="width: 3.5rem; height: 3.5rem; object-fit: cover; flex-shrink: 0;">
+                            <img id="previewFotoCliente" src="../uploads/clientes/sem_foto.png" alt="" class="rounded-circle" style="width: 3.5rem; height: 3.5rem; object-fit: cover; flex-shrink: 0;">
                             <div class="flex-grow-1">
-                                <input type="file" id="usuario_foto" name="foto" accept=".png,.jpg,.jpeg,.webp" class="form-control">
+                                <input type="file" id="cliente_foto" name="foto" accept=".png,.jpg,.jpeg,.webp" class="form-control">
                                 <div class="form-text">PNG, JPG ou WEBP — até 2MB.</div>
                             </div>
-                        </div>
-
-                        <div class="col-12">
-                            <label class="form-label" for="usuario_nome">Nome Completo *</label>
-                            <input type="text" id="usuario_nome" name="nome" class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="usuario_email">E-mail *</label>
-                            <input type="email" id="usuario_email" name="email" class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="usuario_cpf">CPF</label>
-                            <input type="text" id="usuario_cpf" name="cpf" class="form-control" placeholder="000.000.000-00">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="usuario_telefone">Telefone</label>
-                            <input type="text" id="usuario_telefone" name="telefone" class="form-control" placeholder="(00) 00000-0000">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="usuario_senha">Senha <span id="usuarioSenhaHint" class="text-muted fw-normal small">(mínimo 6 caracteres)</span></label>
-                            <input type="password" id="usuario_senha" name="senha" class="form-control" autocomplete="new-password" minlength="6">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="usuario_nivel">Nível de Acesso *</label>
-                            <select id="usuario_nivel" name="cargo_id" class="form-select" required>
-                                <option value="">Carregando...</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="usuario_ativo">Status *</label>
-                            <select id="usuario_ativo" name="ativo" class="form-select" required>
-                                <option value="1">Ativo</option>
-                                <option value="0">Inativo</option>
-                            </select>
                         </div>
                     </div>
 
@@ -100,12 +98,12 @@
                     <h6 class="text-uppercase text-muted small fw-bold mb-3">Endereço</h6>
                     <div class="row g-3">
                         <div class="col-md-3">
-                            <label class="form-label" for="usuario_cep">CEP</label>
-                            <input type="text" id="usuario_cep" name="cep" class="form-control" placeholder="CEP">
+                            <label class="form-label" for="cliente_cep">CEP</label>
+                            <input type="text" id="cliente_cep" name="cep" class="form-control" placeholder="CEP">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label" for="usuario_estado">Estado</label>
-                            <select id="usuario_estado" name="estado" class="form-select">
+                            <label class="form-label" for="cliente_estado">Estado</label>
+                            <select id="cliente_estado" name="estado" class="form-select">
                                 <option value="">Selecione</option>
                                 <option value="AC">Acre</option>
                                 <option value="AL">Alagoas</option>
@@ -137,64 +135,68 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="usuario_cidade">Cidade</label>
-                            <input type="text" id="usuario_cidade" name="cidade" class="form-control" placeholder="Cidade">
+                            <label class="form-label" for="cliente_cidade">Cidade</label>
+                            <input type="text" id="cliente_cidade" name="cidade" class="form-control" placeholder="Cidade">
                         </div>
                         <div class="col-md-8">
-                            <label class="form-label" for="usuario_endereco">Endereço</label>
-                            <input type="text" id="usuario_endereco" name="endereco" class="form-control" placeholder="Endereço">
+                            <label class="form-label" for="cliente_endereco">Endereço</label>
+                            <input type="text" id="cliente_endereco" name="endereco" class="form-control" placeholder="Endereço">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label" for="usuario_numero">Número</label>
-                            <input type="text" id="usuario_numero" name="numero" class="form-control" placeholder="Número">
+                            <label class="form-label" for="cliente_numero">Número</label>
+                            <input type="text" id="cliente_numero" name="numero" class="form-control" placeholder="Número">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="usuario_bairro">Bairro</label>
-                            <input type="text" id="usuario_bairro" name="bairro" class="form-control" placeholder="Bairro">
+                            <label class="form-label" for="cliente_bairro">Bairro</label>
+                            <input type="text" id="cliente_bairro" name="bairro" class="form-control" placeholder="Bairro">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="usuario_complemento">Complemento</label>
-                            <input type="text" id="usuario_complemento" name="complemento" class="form-control" placeholder="Complemento">
+                            <label class="form-label" for="cliente_complemento">Complemento</label>
+                            <input type="text" id="cliente_complemento" name="complemento" class="form-control" placeholder="Complemento">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="cliente_observacoes">Observações</label>
+                            <textarea id="cliente_observacoes" name="observacoes" class="form-control" rows="3"></textarea>
                         </div>
                     </div>
                 </div>
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" id="btnSalvarUsuario">Salvar Usuário</button>
+                    <button type="submit" class="btn btn-primary" id="btnSalvarCliente">Salvar Cliente</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Modal Visualizar Usuário — somente leitura, reaproveita scripts/usuarios/buscar.php -->
-<div class="modal fade" id="modalVisualizarUsuario" tabindex="-1" aria-labelledby="modalVisualizarUsuarioLabel" aria-hidden="true">
+<!-- Modal Visualizar Cliente — somente leitura -->
+<div class="modal fade" id="modalVisualizarCliente" tabindex="-1" aria-labelledby="modalVisualizarClienteLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalVisualizarUsuarioLabel">Detalhes do Usuário</h5>
+                <h5 class="modal-title" id="modalVisualizarClienteLabel">Detalhes do Cliente</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
                 <div class="d-flex align-items-center gap-3 mb-4">
-                    <img id="verFotoUsuario" src="../uploads/perfil/sem_foto.png" alt="" class="rounded-circle" style="width: 4rem; height: 4rem; object-fit: cover;">
+                    <img id="verFotoCliente" src="../uploads/clientes/sem_foto.png" alt="" class="rounded-circle" style="width: 4rem; height: 4rem; object-fit: cover;">
                     <div>
                         <h5 class="mb-1" id="verNome">-</h5>
                         <span class="badge" id="verStatus">-</span>
                     </div>
                 </div>
 
-                <h6 class="text-uppercase text-muted small fw-bold mb-3">Dados Pessoais</h6>
+                <h6 class="text-uppercase text-muted small fw-bold mb-3">Dados</h6>
                 <div class="row g-3 mb-4">
                     <div class="col-md-6"><small class="text-muted d-block">E-mail</small><span id="verEmail">-</span></div>
                     <div class="col-md-6"><small class="text-muted d-block">Telefone</small><span id="verTelefone">-</span></div>
-                    <div class="col-md-6"><small class="text-muted d-block">CPF</small><span id="verCpf">-</span></div>
-                    <div class="col-md-6"><small class="text-muted d-block">Nível de Acesso</small><span id="verNivel">-</span></div>
+                    <div class="col-md-6"><small class="text-muted d-block">CPF/CNPJ</small><span id="verCpfCnpj">-</span></div>
+                    <div class="col-md-6"><small class="text-muted d-block">Tipo</small><span id="verTipo">-</span></div>
                 </div>
 
                 <h6 class="text-uppercase text-muted small fw-bold mb-3">Endereço</h6>
-                <div class="row g-3">
+                <div class="row g-3 mb-4">
                     <div class="col-md-3"><small class="text-muted d-block">CEP</small><span id="verCep">-</span></div>
                     <div class="col-md-3"><small class="text-muted d-block">Estado</small><span id="verEstado">-</span></div>
                     <div class="col-md-6"><small class="text-muted d-block">Cidade</small><span id="verCidade">-</span></div>
@@ -203,6 +205,9 @@
                     <div class="col-md-6"><small class="text-muted d-block">Bairro</small><span id="verBairro">-</span></div>
                     <div class="col-md-6"><small class="text-muted d-block">Complemento</small><span id="verComplemento">-</span></div>
                 </div>
+
+                <h6 class="text-uppercase text-muted small fw-bold mb-3">Observações</h6>
+                <p id="verObservacoes" class="mb-0">-</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -216,11 +221,11 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalConfirmarExclusaoLabel">Excluir usuário</h5>
+                <h5 class="modal-title" id="modalConfirmarExclusaoLabel">Excluir cliente</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
-                <p class="mb-0">Tem certeza que deseja excluir este usuário? Essa ação não pode ser desfeita.</p>
+                <p class="mb-0">Tem certeza que deseja excluir este cliente? Essa ação não pode ser desfeita.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -235,6 +240,5 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 <script src="https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.11/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<script src="assets/js/usuarios.js"></script>
+<script src="assets/js/clientes.js"></script>

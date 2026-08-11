@@ -72,7 +72,7 @@ if (!filter_var($username, FILTER_VALIDATE_EMAIL)) {
 }
 
 // ---------- Consulta Segura (Prepared Statement contra SQL Injection) ----------
-$stmt = $pdo->prepare("SELECT id, nome, email, senha, nivel, ativo, empresa FROM usuarios WHERE email = :email LIMIT 1");
+$stmt = $pdo->prepare("SELECT id, nome, email, senha, nivel, cargo_id, ativo, empresa FROM usuarios WHERE email = :email LIMIT 1");
 $stmt->execute([':email' => $username]);
 $usuario = $stmt->fetch();
 
@@ -104,6 +104,7 @@ $_SESSION['id']         = (int) $usuario['id'];
 $_SESSION['nome']       = $usuario['nome'];
 $_SESSION['email']      = $usuario['email'];
 $_SESSION['nivel']      = $usuario['nivel'];
+$_SESSION['cargo_id']   = $usuario['cargo_id'] !== null ? (int) $usuario['cargo_id'] : null;
 $_SESSION['id_empresa'] = (int) $usuario['empresa'];
 
 // Redireciona com caminho explícito para o painel (URL amigável)

@@ -1,6 +1,6 @@
 <?php
 /**
- * painel/scripts/excluir_cargo.php
+ * painel/scripts/cargos/excluir.php
  */
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -16,7 +16,7 @@ if (empty($_SESSION['id'])) {
     resp(false, 'Sessão expirada.');
 }
 
-require_once __DIR__ . '/../../conexao.php';
+require_once __DIR__ . '/../../../conexao.php';
 
 $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
 if (!$id) {

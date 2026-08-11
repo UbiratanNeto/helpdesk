@@ -1,6 +1,27 @@
 <?php
 require_once 'verificar.php';
+require_once __DIR__ . '/includes/permissoes.php';
+
 $pagina = $_GET['p'] ?? 'dashboard';
+
+// Resolve $pagina ANTES do <head> — o head.php decide o que carregar (ex.: Chart.js só no
+// dashboard) olhando pra essa variável, então ela precisa já estar no valor final aqui,
+// não só depois lá dentro do <main>.
+
+// Catálogo único de páginas (painel/includes/menus.php) — qualquer valor de ?p= fora dele
+// é ignorado, mesmo que o texto pareça um caminho de arquivo válido. Isso evita Local File
+// Inclusion (ex.: ?p=../../conexao).
+$catalogo = require __DIR__ . '/includes/menus.php';
+$paginas_permitidas = array_keys($catalogo['paginas']);
+
+// Além de existir no catálogo, o cargo do usuário logado precisa ter permissão pra essa
+// página específica (RBAC — ver painel/includes/permissoes.php).
+$paginaValida = in_array($pagina, $paginas_permitidas, true)
+    && podeAcessarPagina($pdo, $_SESSION['cargo_id'] ?? null, $pagina);
+
+if (!$paginaValida) {
+    $pagina = 'dashboard';
+}
 
 // Resgate de cores do banco de dados (carregadas via verificar.php -> conexao.php)
 $primary = (!empty($cor_primaria)) ? $cor_primaria : '#4f46e5';
@@ -56,16 +77,8 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
             <!-- Conteúdo da Página Atual (Dashboard, Chamados, etc) -->
             <main class="hd-container">
                 <?php
-                // Lista de páginas permitidas: qualquer valor de ?p= fora desta lista
-                // é ignorado, mesmo que o texto pareça um caminho de arquivo válido.
-                // Isso evita Local File Inclusion (ex.: ?p=../../conexao).
-                $paginas_permitidas = ['dashboard', 'chamados', 'clientes', 'usuarios', 'relatorios', 'configuracoes', 'categorias', 'setores', 'cargos'];
-
-                if (!in_array($pagina, $paginas_permitidas, true)) {
-                    $pagina = 'dashboard';
-                }
-
-                // Mesmo dentro da lista permitida, a página pode ainda não ter sido criada
+                // $pagina já foi resolvida (catálogo + permissão) lá no topo do arquivo.
+                // Mesmo assim, ela pode ainda não ter sido criada como arquivo de verdade.
                 $arquivo_pagina = "paginas/{$pagina}.php";
                 if (file_exists($arquivo_pagina)) {
                     include $arquivo_pagina;
