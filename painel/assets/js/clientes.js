@@ -1,39 +1,26 @@
 /**
- * painel/assets/js/usuarios.js
- * Gestão de Usuários: lista via DataTables (Bootstrap 5 + jQuery), cria/edita/exclui via fetch.
+ * painel/assets/js/clientes.js
+ * Gestão de Clientes: lista via DataTables (Bootstrap 5 + jQuery), cria/edita/exclui via fetch.
  *
- * Funções globais (novo/editar/excluir/salvar/visualizar), sem namespace: só carregamos este
- * arquivo na página de Usuários, então não há risco de colidir com o mesmo padrão em outras
- * páginas (chamados.js, clientes.js etc. terão suas próprias versões dessas funções).
+ * Mesmas funções globais genéricas de usuarios.js/cargos.js (novo/editar/excluir/salvar/visualizar) —
+ * só carregamos este arquivo na página de Clientes, então não há colisão com as outras páginas.
+ * Diferença importante: "ativo" aqui é texto ("Sim"/"Não"), não 1/0 como em usuarios/cargos —
+ * é assim que a tabela clientes foi definida.
  */
 
 let tabela;
 let idParaExcluir = null;
 
 $(function () {
-    const $tabela = $('#tabelaUsuarios');
-    if ($tabela.length === 0) return; // Este script só faz sentido na página de Usuários
-
-    // Select2 no lugar do <select> nativo de Nível de Acesso — dropdownParent aponta pro
-    // modal porque, dentro de um modal do Bootstrap, o dropdown do Select2 renderiza atrás
-    // do backdrop se não for "ancorado" nele.
-    $('#usuario_nivel').select2({
-        theme: 'bootstrap-5',
-        width: '100%',
-        dropdownParent: $('#modalUsuario'),
-        placeholder: 'Selecione o nível de acesso',
-    });
-
-    // Popula o select de Nível de Acesso a partir de Cadastros > Cargos — função genérica
-    // (functions.js, carregada em toda página), reaproveitável por qualquer outra tela.
-    carregarOpcoesEmSelect('scripts/cargos/listar.php', '#usuario_nivel', 'Nenhum cargo cadastrado');
+    const $tabela = $('#tabelaClientes');
+    if ($tabela.length === 0) return; // Este script só faz sentido na página de Clientes
 
     tabela = $tabela.DataTable({
         ajax: {
-            url: 'scripts/usuarios/listar.php',
+            url: 'scripts/clientes/listar.php',
             dataSrc: function (json) {
                 if (!json.ok) {
-                    Mensagens.erro('Erro', json.msg || 'Não foi possível carregar os usuários.');
+                    Mensagens.erro('Erro', json.msg || 'Não foi possível carregar os clientes.');
                     return [];
                 }
                 return json.data;
@@ -46,14 +33,14 @@ $(function () {
                 }
             },
             { data: 'nome' },
-            { data: 'email' },
+            { data: 'email', render: function (v) { return v || '-'; } },
             { data: 'telefone', render: function (v) { return v || '-'; } },
-            { data: 'nivel' },
+            { data: 'tipo', render: function (v) { return v || '-'; } },
             {
                 data: 'ativo', render: function (ativo) {
-                    return ativo == 1
-                        ? '<span class="badge bg-success">Ativo</span>'
-                        : '<span class="badge bg-danger">Inativo</span>';
+                    return ativo === 'Sim'
+                        ? '<span class="badge bg-success">Sim</span>'
+                        : '<span class="badge bg-danger">Não</span>';
                 }
             },
             {
@@ -83,16 +70,16 @@ $(function () {
         excluir($(this).data('id'));
     });
 
-    $('#formUsuario').on('submit', function (e) {
+    $('#formCliente').on('submit', function (e) {
         e.preventDefault();
         salvar(this);
     });
 
-    $('#usuario_foto').on('change', function () {
+    $('#cliente_foto').on('change', function () {
         if (!this.files || !this.files[0]) return;
         const leitor = new FileReader();
         leitor.onload = function (e) {
-            $('#previewFotoUsuario').attr('src', e.target.result);
+            $('#previewFotoCliente').attr('src', e.target.result);
         };
         leitor.readAsDataURL(this.files[0]);
     });
@@ -103,19 +90,16 @@ $(function () {
 });
 
 function novo() {
-    const form = document.getElementById('formUsuario');
+    const form = document.getElementById('formCliente');
     form.reset();
-    $('#usuario_id').val('');
-    $('#usuario_nivel').trigger('change');
-    $('#modalUsuarioLabel').text('Cadastrar Usuário');
-    $('#usuarioSenhaHint').text('(mínimo 6 caracteres)');
-    $('#usuario_senha').prop('required', true);
-    $('#previewFotoUsuario').attr('src', '../uploads/perfil/sem_foto.png');
-    bootstrap.Modal.getOrCreateInstance('#modalUsuario').show();
+    $('#cliente_id').val('');
+    $('#modalClienteLabel').text('Cadastrar Cliente');
+    $('#previewFotoCliente').attr('src', '../uploads/clientes/sem_foto.png');
+    bootstrap.Modal.getOrCreateInstance('#modalCliente').show();
 }
 
 function visualizar(id) {
-    fetch('scripts/usuarios/buscar.php?id=' + encodeURIComponent(id))
+    fetch('scripts/clientes/buscar.php?id=' + encodeURIComponent(id))
         .then(function (resposta) { return resposta.json(); })
         .then(function (dados) {
             if (!dados.ok) {
@@ -123,35 +107,36 @@ function visualizar(id) {
                 return;
             }
 
-            const u = dados.data;
-            const ativo = u.ativo == 1;
+            const c = dados.data;
+            const ativo = c.ativo === 'Sim';
 
-            $('#verFotoUsuario').attr('src', u.foto_url);
-            $('#verNome').text(u.nome || '-');
+            $('#verFotoCliente').attr('src', c.foto_url);
+            $('#verNome').text(c.nome || '-');
             $('#verStatus').text(ativo ? 'Ativo' : 'Inativo')
                 .removeClass('bg-success bg-danger')
                 .addClass(ativo ? 'bg-success' : 'bg-danger');
-            $('#verEmail').text(u.email || '-');
-            $('#verTelefone').text(u.telefone || '-');
-            $('#verCpf').text(u.cpf || '-');
-            $('#verNivel').text(u.nivel || '-');
-            $('#verCep').text(u.cep || '-');
-            $('#verEstado').text(u.estado || '-');
-            $('#verCidade').text(u.cidade || '-');
-            $('#verEndereco').text(u.endereco || '-');
-            $('#verNumero').text(u.numero || '-');
-            $('#verBairro').text(u.bairro || '-');
-            $('#verComplemento').text(u.complemento || '-');
+            $('#verEmail').text(c.email || '-');
+            $('#verTelefone').text(c.telefone || '-');
+            $('#verCpfCnpj').text(c.cpf_cnpj || '-');
+            $('#verTipo').text(c.tipo || '-');
+            $('#verCep').text(c.cep || '-');
+            $('#verEstado').text(c.estado || '-');
+            $('#verCidade').text(c.cidade || '-');
+            $('#verEndereco').text(c.endereco || '-');
+            $('#verNumero').text(c.numero || '-');
+            $('#verBairro').text(c.bairro || '-');
+            $('#verComplemento').text(c.complemento || '-');
+            $('#verObservacoes').text(c.observacoes || '-');
 
-            bootstrap.Modal.getOrCreateInstance('#modalVisualizarUsuario').show();
+            bootstrap.Modal.getOrCreateInstance('#modalVisualizarCliente').show();
         })
         .catch(function () {
-            Mensagens.erro('Erro', 'Não foi possível carregar os dados do usuário.');
+            Mensagens.erro('Erro', 'Não foi possível carregar os dados do cliente.');
         });
 }
 
 function editar(id) {
-    fetch('scripts/usuarios/buscar.php?id=' + encodeURIComponent(id))
+    fetch('scripts/clientes/buscar.php?id=' + encodeURIComponent(id))
         .then(function (resposta) { return resposta.json(); })
         .then(function (dados) {
             if (!dados.ok) {
@@ -159,36 +144,31 @@ function editar(id) {
                 return;
             }
 
-            const u = dados.data;
+            const c = dados.data;
 
-            $('#usuario_id').val(u.id);
-            $('#usuario_nome').val(u.nome || '');
-            $('#usuario_email').val(u.email || '');
-            $('#usuario_telefone').val(u.telefone || '');
-            $('#usuario_cpf').val(u.cpf || '');
-            $('#usuario_cep').val(u.cep || '');
-            $('#usuario_estado').val(u.estado || '');
-            $('#usuario_cidade').val(u.cidade || '');
-            $('#usuario_bairro').val(u.bairro || '');
-            $('#usuario_endereco').val(u.endereco || '');
-            $('#usuario_numero').val(u.numero || '');
-            $('#usuario_complemento').val(u.complemento || '');
-            // cargo_id é a FK de verdade agora — se o usuário for um registro antigo sem
-            // cargo vinculado (NULL), o select simplesmente abre vazio, exigindo escolher
-            // um cargo real da lista antes de salvar (o campo é required).
-            $('#usuario_nivel').val(u.cargo_id || '').trigger('change');
-            $('#usuario_ativo').val(String(u.ativo));
+            $('#cliente_id').val(c.id);
+            $('#cliente_nome').val(c.nome || '');
+            $('#cliente_telefone').val(c.telefone || '');
+            $('#cliente_cpf_cnpj').val(c.cpf_cnpj || '');
+            $('#cliente_email').val(c.email || '');
+            $('#cliente_tipo').val(c.tipo || 'Pessoa Física');
+            $('#cliente_ativo').val(c.ativo || 'Sim');
+            $('#cliente_cep').val(c.cep || '');
+            $('#cliente_estado').val(c.estado || '');
+            $('#cliente_cidade').val(c.cidade || '');
+            $('#cliente_endereco').val(c.endereco || '');
+            $('#cliente_numero').val(c.numero || '');
+            $('#cliente_bairro').val(c.bairro || '');
+            $('#cliente_complemento').val(c.complemento || '');
+            $('#cliente_observacoes').val(c.observacoes || '');
 
-            $('#modalUsuarioLabel').text('Editar Usuário');
-            $('#usuarioSenhaHint').text('(deixe em branco para não alterar)');
-            $('#usuario_senha').prop('required', false).val('');
+            $('#modalClienteLabel').text('Editar Cliente');
+            $('#previewFotoCliente').attr('src', c.foto_url);
 
-            $('#previewFotoUsuario').attr('src', u.foto_url);
-
-            bootstrap.Modal.getOrCreateInstance('#modalUsuario').show();
+            bootstrap.Modal.getOrCreateInstance('#modalCliente').show();
         })
         .catch(function () {
-            Mensagens.erro('Erro', 'Não foi possível carregar os dados do usuário.');
+            Mensagens.erro('Erro', 'Não foi possível carregar os dados do cliente.');
         });
 }
 
@@ -205,7 +185,7 @@ function confirmarExclusao() {
     botao.disabled = true;
     botao.textContent = 'Excluindo...';
 
-    fetch('scripts/usuarios/excluir.php', {
+    fetch('scripts/clientes/excluir.php', {
         method: 'POST',
         body: new URLSearchParams({ id: idParaExcluir })
     })
@@ -231,19 +211,19 @@ function confirmarExclusao() {
 }
 
 function salvar(form) {
-    const botao = document.getElementById('btnSalvarUsuario');
+    const botao = document.getElementById('btnSalvarCliente');
     const textoOriginal = botao.textContent;
     botao.disabled = true;
     botao.textContent = 'Salvando...';
 
-    fetch('scripts/usuarios/salvar.php', {
+    fetch('scripts/clientes/salvar.php', {
         method: 'POST',
         body: new FormData(form)
     })
         .then(function (resposta) { return resposta.json(); })
         .then(function (dados) {
             if (dados.ok) {
-                bootstrap.Modal.getOrCreateInstance('#modalUsuario').hide();
+                bootstrap.Modal.getOrCreateInstance('#modalCliente').hide();
                 tabela.ajax.reload(null, false);
                 Mensagens.sucesso('Sucesso!', dados.msg);
             } else {

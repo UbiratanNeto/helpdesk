@@ -19,7 +19,7 @@ require_once __DIR__ . '/../conexao.php';
 
 try {
     // 3. Busca no banco os dados em tempo real para verificar se o usuário continua ativo ou mudou de nível
-    $stmt = $pdo->prepare("SELECT id, nome, email, telefone, cpf, nivel, ativo, empresa, foto, cep, estado, cidade, bairro, endereco, numero, complemento FROM usuarios WHERE id = :id LIMIT 1");
+    $stmt = $pdo->prepare("SELECT id, nome, email, telefone, cpf, nivel, cargo_id, ativo, empresa, foto, cep, estado, cidade, bairro, endereco, numero, complemento FROM usuarios WHERE id = :id LIMIT 1");
     $stmt->execute([':id' => $_SESSION['id']]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -57,6 +57,7 @@ try {
     $_SESSION['nome']       = $usuario['nome'];
     $_SESSION['email']      = $usuario['email'];
     $_SESSION['nivel']      = $usuario['nivel'];
+    $_SESSION['cargo_id']   = $usuario['cargo_id'] !== null ? (int) $usuario['cargo_id'] : null;
     $_SESSION['id_empresa'] = (int) $usuario['empresa'];
     $_SESSION['foto']       = $usuario['foto'];
 

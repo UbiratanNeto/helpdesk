@@ -1,7 +1,7 @@
 <?php
 /**
- * painel/scripts/salvar_usuario.php
- * Cria ou atualiza um usuário (Gestão de Usuários).
+ * painel/scripts/clientes/salvar.php
+ * Cria ou atualiza um cliente (Gestão de Clientes).
  */
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -21,13 +21,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     resp(false, 'Método inválido.');
 }
 
-require_once __DIR__ . '/../../conexao.php';
+require_once __DIR__ . '/../../../conexao.php';
 
 /**
- * Valida e salva o upload da foto em uploads/perfil/ (mesma pasta usada pelo modal de Perfil).
+ * Valida e salva o upload da foto em uploads/clientes/.
  * Devolve o novo nome de arquivo, ou null se nenhum arquivo novo foi enviado.
  */
-function processarUploadFotoUsuario(string $arquivoAntigo): ?string {
+function processarUploadFotoCliente(string $arquivoAntigo): ?string {
     if (empty($_FILES['foto']['name'])) {
         return null;
     }
@@ -53,13 +53,13 @@ function processarUploadFotoUsuario(string $arquivoAntigo): ?string {
         resp(false, 'O arquivo enviado não é uma imagem válida.');
     }
 
-    $uploadsDir = __DIR__ . '/../../uploads/perfil';
+    $uploadsDir = __DIR__ . '/../../../uploads/clientes';
     if (!is_dir($uploadsDir)) {
         mkdir($uploadsDir, 0755, true);
     }
     $uploadsDir = realpath($uploadsDir);
 
-    $novoNome = 'usuario_' . bin2hex(random_bytes(4)) . '.' . $extensao;
+    $novoNome = 'cliente_' . bin2hex(random_bytes(4)) . '.' . $extensao;
     $destino = $uploadsDir . DIRECTORY_SEPARATOR . $novoNome;
 
     if (!move_uploaded_file($arquivo['tmp_name'], $destino)) {
@@ -82,93 +82,77 @@ $id          = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
 $nome        = trim($_POST['nome'] ?? '');
 $email       = trim($_POST['email'] ?? '');
 $telefone    = trim($_POST['telefone'] ?? '');
-$cpf         = trim($_POST['cpf'] ?? '');
+$cpf_cnpj    = trim($_POST['cpf_cnpj'] ?? '');
+$tipo        = trim($_POST['tipo'] ?? '');
+$ativo       = trim($_POST['ativo'] ?? 'Sim');
+$cep         = trim($_POST['cep'] ?? '');
 $endereco    = trim($_POST['endereco'] ?? '');
 $numero      = trim($_POST['numero'] ?? '');
 $complemento = trim($_POST['complemento'] ?? '');
 $bairro      = trim($_POST['bairro'] ?? '');
 $cidade      = trim($_POST['cidade'] ?? '');
 $estado      = strtoupper(trim($_POST['estado'] ?? ''));
-$cep         = trim($_POST['cep'] ?? '');
-$nivel       = $_POST['nivel'] ?? 'Usuário';
-$ativo       = isset($_POST['ativo']) ? (int) $_POST['ativo'] : 1;
-$senha       = $_POST['senha'] ?? '';
+$observacoes = trim($_POST['observacoes'] ?? '');
 
 // ===== Validações =====
 if ($nome === '') {
-    resp(false, 'Informe o nome completo.');
+    resp(false, 'Informe o nome do cliente.');
 }
-if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     resp(false, 'Informe um e-mail válido.');
-}
-if ($senha !== '' && strlen($senha) < 6) {
-    resp(false, 'A senha precisa ter pelo menos 6 caracteres.');
-}
-if (!$id && $senha === '') {
-    resp(false, 'Informe a senha para o novo usuário.');
 }
 
 try {
-    // E-mail duplicado (considerando outros usuários, não o próprio ao editar)
-    $stmtDup = $pdo->prepare("SELECT id FROM usuarios WHERE email = ? AND id != ?");
-    $stmtDup->execute([$email, $id ?? 0]);
-    if ($stmtDup->fetch()) {
-        resp(false, 'Este e-mail já está cadastrado por outro usuário.');
-    }
-
     // Foto atual (pra saber o que apagar, se uma nova for enviada)
     $fotoAtual = '';
     if ($id) {
-        $stmtFoto = $pdo->prepare("SELECT foto FROM usuarios WHERE id = ?");
+        $stmtFoto = $pdo->prepare("SELECT foto FROM clientes WHERE id = ?");
         $stmtFoto->execute([$id]);
         $fotoAtual = (string) $stmtFoto->fetchColumn();
     }
-    $novaFoto = processarUploadFotoUsuario($fotoAtual);
+    $novaFoto = processarUploadFotoCliente($fotoAtual);
 
     $params = [
-        ':nome' => $nome, ':email' => $email, ':telefone' => $telefone, ':cpf' => $cpf,
-        ':endereco' => $endereco, ':numero' => $numero, ':complemento' => $complemento,
-        ':bairro' => $bairro, ':cidade' => $cidade, ':estado' => $estado, ':cep' => $cep,
-        ':nivel' => $nivel, ':ativo' => $ativo,
+        ':nome' => $nome, ':email' => $email ?: null, ':telefone' => $telefone ?: null,
+        ':cpf_cnpj' => $cpf_cnpj ?: null, ':tipo' => $tipo ?: null, ':ativo' => $ativo,
+        ':cep' => $cep ?: null, ':endereco' => $endereco ?: null, ':numero' => $numero ?: null,
+        ':complemento' => $complemento ?: null, ':bairro' => $bairro ?: null, ':cidade' => $cidade ?: null,
+        ':estado' => $estado ?: null, ':observacoes' => $observacoes ?: null,
     ];
 
     if ($id) {
         // ===== Atualização (UPDATE) =====
         $set = [
-            'nome = :nome', 'email = :email', 'telefone = :telefone', 'cpf = :cpf',
-            'endereco = :endereco', 'numero = :numero', 'complemento = :complemento',
-            'bairro = :bairro', 'cidade = :cidade', 'estado = :estado', 'cep = :cep',
-            'nivel = :nivel', 'ativo = :ativo', 'data_atualizacao = NOW()',
+            'nome = :nome', 'email = :email', 'telefone = :telefone', 'cpf_cnpj = :cpf_cnpj',
+            'tipo = :tipo', 'ativo = :ativo', 'cep = :cep', 'endereco = :endereco', 'numero = :numero',
+            'complemento = :complemento', 'bairro = :bairro', 'cidade = :cidade', 'estado = :estado',
+            'observacoes = :observacoes',
         ];
 
-        if ($senha !== '') {
-            $set[] = 'senha = :senha';
-            $params[':senha'] = password_hash($senha, PASSWORD_DEFAULT);
-        }
         if ($novaFoto !== null) {
             $set[] = 'foto = :foto';
             $params[':foto'] = $novaFoto;
         }
 
         $params[':id'] = $id;
-        $sql = 'UPDATE usuarios SET ' . implode(', ', $set) . ' WHERE id = :id';
+        $sql = 'UPDATE clientes SET ' . implode(', ', $set) . ' WHERE id = :id';
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
 
-        resp(true, 'Usuário atualizado com sucesso!');
+        resp(true, 'Cliente atualizado com sucesso!');
     } else {
-        // ===== Inserção (INSERT) — senha e foto sempre presentes aqui =====
-        $params[':senha'] = password_hash($senha, PASSWORD_DEFAULT);
-        $params[':foto']  = $novaFoto; // pode ser null; a coluna aceita NULL
+        // ===== Inserção (INSERT) =====
+        $params[':foto'] = $novaFoto; // pode ser null; a coluna aceita NULL
+        $params[':data_cadastro'] = date('Y-m-d H:i:s');
 
         $stmt = $pdo->prepare("
-            INSERT INTO usuarios (nome, email, telefone, cpf, endereco, numero, complemento, bairro, cidade, estado, cep, nivel, ativo, senha, foto)
-            VALUES (:nome, :email, :telefone, :cpf, :endereco, :numero, :complemento, :bairro, :cidade, :estado, :cep, :nivel, :ativo, :senha, :foto)
+            INSERT INTO clientes (nome, email, telefone, cpf_cnpj, tipo, ativo, cep, endereco, numero, complemento, bairro, cidade, estado, observacoes, foto, data_cadastro)
+            VALUES (:nome, :email, :telefone, :cpf_cnpj, :tipo, :ativo, :cep, :endereco, :numero, :complemento, :bairro, :cidade, :estado, :observacoes, :foto, :data_cadastro)
         ");
         $stmt->execute($params);
 
-        resp(true, 'Usuário cadastrado com sucesso!');
+        resp(true, 'Cliente cadastrado com sucesso!');
     }
 } catch (PDOException $e) {
     resp(false, 'Erro no banco de dados: ' . $e->getMessage());

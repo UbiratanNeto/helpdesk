@@ -1,6 +1,6 @@
 <?php
 /**
- * painel/scripts/listar_usuarios.php
+ * painel/scripts/usuarios/listar.php
  * Devolve a lista de usuários em JSON puro (sem HTML embutido) — o front-end
  * (painel/assets/js/usuarios.js) monta as linhas da tabela com DOM/textContent,
  * o que evita qualquer risco de HTML malicioso vindo de um nome/e-mail salvo no banco.
@@ -19,7 +19,7 @@ if (empty($_SESSION['id'])) {
     resp(false, 'Sessão expirada.');
 }
 
-require_once __DIR__ . '/../../conexao.php';
+require_once __DIR__ . '/../../../conexao.php';
 
 try {
     $stmt = $pdo->query("SELECT id, nome, email, telefone, foto, nivel, ativo FROM usuarios ORDER BY id DESC");
@@ -27,7 +27,7 @@ try {
 
     $data = [];
     foreach ($usuarios as $user) {
-        $fotoExiste = !empty($user['foto']) && file_exists(__DIR__ . '/../../uploads/perfil/' . $user['foto']);
+        $fotoExiste = !empty($user['foto']) && file_exists(__DIR__ . '/../../../uploads/perfil/' . $user['foto']);
 
         $data[] = [
             'id'        => (int) $user['id'],

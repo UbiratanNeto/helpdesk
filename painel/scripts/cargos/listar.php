@@ -1,6 +1,6 @@
 <?php
 /**
- * painel/scripts/listar_cargos.php
+ * painel/scripts/cargos/listar.php
  * Devolve a lista de cargos em JSON puro pro DataTables (assets/js/cargos.js).
  */
 if (session_status() === PHP_SESSION_NONE) {
@@ -17,7 +17,7 @@ if (empty($_SESSION['id'])) {
     resp(false, 'Sessão expirada.');
 }
 
-require_once __DIR__ . '/../../conexao.php';
+require_once __DIR__ . '/../../../conexao.php';
 
 try {
     $stmt = $pdo->query("SELECT id, nome FROM cargos ORDER BY nome ASC");

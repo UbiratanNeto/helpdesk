@@ -30,6 +30,21 @@ if ($loginMensagem !== null) {
     unset($_SESSION['login_mensagem']);
 }
 
+// ===== CARGO ADMINISTRADOR PADRÃO (criado só se ainda não existir) =====
+// Mesmo princípio do usuário Administrador logo abaixo: SELECT COUNT barato, sem
+// cache, roda em toda visita à tela de login, pra sempre garantir que o cargo
+// básico exista mesmo se a tabela for limpa.
+$stmtCargo = $pdo->query("SELECT COUNT(*) FROM cargos WHERE nome = 'Administrador'");
+if ($stmtCargo->fetchColumn() == 0) {
+    // acesso_total = 1: o Administrador padrão precisa nascer enxergando o sistema
+    // inteiro, sem depender de alguém configurar permissões manualmente antes de logar.
+    $insCargo = $pdo->prepare("INSERT INTO cargos (nome, acesso_total, empresa) VALUES (:nome, 1, :empresa)");
+    $insCargo->execute([
+        ':nome'    => 'Administrador',
+        ':empresa' => $id_empresa,
+    ]);
+}
+
 // ===== USUÁRIO ADMINISTRADOR PADRÃO (criado só se ainda não existir) =====
 // Roda em toda visita à tela de login (sem cache de sessão): é um SELECT COUNT barato,
 // e sem cache aqui o sistema sempre consegue se auto-recuperar se a tabela for limpa.
