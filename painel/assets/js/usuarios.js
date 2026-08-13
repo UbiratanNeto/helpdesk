@@ -57,10 +57,18 @@ $(function () {
                 }
             },
             {
-                data: 'id', orderable: false, className: 'text-end', render: function (id) {
+                data: 'id', orderable: false, className: 'text-end', render: function (id, tipo, linha) {
+                    // Usuário cujo cargo já tem acesso_total não precisa (nem pode) de
+                    // permissão individual — botão fica desabilitado, com dica do motivo.
+                    const permissoesDesabilitado = linha.acesso_total == 1;
+                    const tituloPermissoes = permissoesDesabilitado
+                        ? 'Este usuário já tem acesso total pelo cargo'
+                        : 'Permissões';
+
                     return '<div class="btn-group btn-group-sm">'
                         + '<button type="button" class="btn btn-outline-primary btn-visualizar" data-id="' + id + '" title="Visualizar"><i class="fa-solid fa-eye"></i></button>'
                         + '<button type="button" class="btn btn-outline-secondary btn-editar" data-id="' + id + '" title="Editar"><i class="fa-solid fa-pen"></i></button>'
+                        + '<button type="button" class="btn btn-outline-secondary btn-permissoes" data-id="' + id + '" title="' + tituloPermissoes + '"' + (permissoesDesabilitado ? ' disabled' : '') + '><i class="fa-solid fa-key"></i></button>'
                         + '<button type="button" class="btn btn-outline-danger btn-excluir" data-id="' + id + '" title="Excluir"><i class="fa-solid fa-trash"></i></button>'
                         + '</div>';
                 }
@@ -79,6 +87,9 @@ $(function () {
     $tabela.on('click', '.btn-editar', function () {
         editar($(this).data('id'));
     });
+    $tabela.on('click', '.btn-permissoes', function () {
+        permissoes($(this).data('id'));
+    });
     $tabela.on('click', '.btn-excluir', function () {
         excluir($(this).data('id'));
     });
@@ -86,6 +97,18 @@ $(function () {
     $('#formUsuario').on('submit', function (e) {
         e.preventDefault();
         salvar(this);
+    });
+
+    $('#formPermissoes').on('submit', function (e) {
+        e.preventDefault();
+        salvarPermissoes(this);
+    });
+
+    $('#btnMarcarTodasPermissoes').on('click', function () {
+        alternarTodasPermissoes(true);
+    });
+    $('#btnDesmarcarTodasPermissoes').on('click', function () {
+        alternarTodasPermissoes(false);
     });
 
     $('#usuario_foto').on('change', function () {
@@ -189,6 +212,106 @@ function editar(id) {
         })
         .catch(function () {
             Mensagens.erro('Erro', 'Não foi possível carregar os dados do usuário.');
+        });
+}
+
+/**
+ * Marca ou desmarca todos os switches do modal de Permissões de uma vez — inclui os
+ * que forem gerados dinamicamente em "Outros" (mesma classe .permissao-checkbox).
+ */
+function alternarTodasPermissoes(marcar) {
+    document.querySelectorAll('#formPermissoes .permissao-checkbox').forEach(function (checkbox) {
+        checkbox.checked = marcar;
+    });
+}
+
+function permissoes(id) {
+    fetch('scripts/usuarios/buscar.php?id=' + encodeURIComponent(id))
+        .then(function (resposta) { return resposta.json(); })
+        .then(function (dados) {
+            if (!dados.ok) {
+                Mensagens.erro('Erro', dados.msg);
+                return;
+            }
+
+            const u = dados.data;
+
+            if (u.acesso_total) {
+                Mensagens.erro('Acesso total', 'Este usuário já tem acesso total pelo cargo — não há o que configurar aqui.');
+                return;
+            }
+
+            $('#permissoes_usuario_id').val(u.id);
+            $('#permissoesNomeUsuario').text(u.nome || '');
+
+            const checkboxesConhecidos = document.querySelectorAll('#formPermissoes .permissao-checkbox');
+            const valoresConhecidos = Array.from(checkboxesConhecidos).map(function (c) { return c.value; });
+            checkboxesConhecidos.forEach(function (checkbox) {
+                checkbox.checked = u.permissoes.indexOf(checkbox.value) !== -1;
+            });
+
+            // "Outros": permissões que o usuário já tem gravadas mas que não batem com
+            // nenhuma página do catálogo atual (ex.: página removida depois de liberada).
+            // Mostramos em vez de esconder, pra dar a chance de desativar/limpar.
+            const orfas = u.permissoes.filter(function (menu) { return valoresConhecidos.indexOf(menu) === -1; });
+            const listaOutros = document.getElementById('permissoesOutrosLista');
+            listaOutros.innerHTML = '';
+            orfas.forEach(function (menu) {
+                const linha = document.createElement('div');
+                linha.className = 'hd-permissao-item';
+
+                const label = document.createElement('span');
+                label.className = 'hd-permissao-item__label';
+                label.textContent = menu; // não tem label no catálogo — mostra o valor bruto mesmo
+
+                const wrapSwitch = document.createElement('div');
+                wrapSwitch.className = 'form-check form-switch mb-0';
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.role = 'switch';
+                input.className = 'form-check-input permissao-checkbox';
+                input.name = 'permissoes[]';
+                input.value = menu;
+                input.checked = true; // ele já tem essa permissão — o admin decide se mantém ou desliga
+                wrapSwitch.appendChild(input);
+
+                linha.append(label, wrapSwitch);
+                listaOutros.appendChild(linha);
+            });
+            document.getElementById('permissoesOutrosWrapper').style.display = orfas.length > 0 ? '' : 'none';
+
+            bootstrap.Modal.getOrCreateInstance('#modalPermissoes').show();
+        })
+        .catch(function () {
+            Mensagens.erro('Erro', 'Não foi possível carregar as permissões do usuário.');
+        });
+}
+
+function salvarPermissoes(form) {
+    const botao = document.getElementById('btnSalvarPermissoes');
+    const textoOriginal = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Salvando...';
+
+    fetch('scripts/usuarios/salvar_permissoes.php', {
+        method: 'POST',
+        body: new FormData(form)
+    })
+        .then(function (resposta) { return resposta.json(); })
+        .then(function (dados) {
+            if (dados.ok) {
+                bootstrap.Modal.getOrCreateInstance('#modalPermissoes').hide();
+                Mensagens.sucesso('Sucesso!', dados.msg);
+            } else {
+                Mensagens.erro('Atenção', dados.msg);
+            }
+        })
+        .catch(function () {
+            Mensagens.erro('Erro de conexão', 'Não foi possível salvar agora. Tente novamente.');
+        })
+        .finally(function () {
+            botao.disabled = false;
+            botao.textContent = textoOriginal;
         });
 }
 

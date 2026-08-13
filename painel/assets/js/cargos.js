@@ -1,9 +1,8 @@
 /**
  * painel/assets/js/cargos.js
  * Gestão de Cargos: lista via DataTables (Bootstrap 5 + jQuery), cria/edita/exclui via fetch.
- * Cada cargo agora também carrega "acesso_total" + a lista de menus permitidos
- * (painel/includes/menus.php), por isso editar() busca em scripts/cargos/buscar.php
- * em vez de ler só a linha do DataTables.
+ * "acesso_total" ainda mora no cargo (bypassa toda checagem de permissão pra quem tiver
+ * esse cargo) — as permissões por menu, essas, agora ficam por usuário (tela de Usuários).
  *
  * Mesmas funções globais genéricas de usuarios.js (novo/editar/excluir/salvar) — só carregamos
  * este arquivo na página de Cargos, então não colide com o mesmo padrão em outras páginas.
@@ -60,37 +59,13 @@ $(function () {
     $('#btnConfirmarExclusao').on('click', function () {
         confirmarExclusao();
     });
-
-    // "Acesso total" desabilita o checklist individual — não faz sentido escolher
-    // menus específicos quando o cargo já vê tudo.
-    $('#cargo_acesso_total').on('change', function () {
-        alternarChecklistPermissoes(this.checked);
-    });
 });
-
-/**
- * Habilita/desabilita os checkboxes de permissão. Desabilitado = não vai no FormData,
- * então salvar um cargo com "Acesso total" ligado limpa as permissões individuais dele
- * no banco — o que não tem problema, já que acesso_total ignora essa lista mesmo.
- */
-function alternarChecklistPermissoes(desabilitar) {
-    document.querySelectorAll('.permissao-checkbox').forEach(function (checkbox) {
-        checkbox.disabled = desabilitar;
-    });
-    document.getElementById('areaPermissoesMenus').classList.toggle('opacity-50', desabilitar);
-}
 
 function novo() {
     const form = document.getElementById('formCargo');
     form.reset();
     $('#cargo_id').val('');
     $('#modalCargoLabel').text('Cadastrar Cargo');
-    alternarChecklistPermissoes(false);
-
-    // Sem essa página marcada, um cargo recém-criado ficaria sem enxergar nada no sistema
-    const dashboardCheckbox = document.getElementById('permissao_dashboard');
-    if (dashboardCheckbox) dashboardCheckbox.checked = true;
-
     bootstrap.Modal.getOrCreateInstance('#modalCargo').show();
 }
 
@@ -108,13 +83,7 @@ function editar(id) {
             $('#cargo_id').val(c.id);
             $('#cargo_nome').val(c.nome || '');
             $('#modalCargoLabel').text('Editar Cargo');
-
-            document.querySelectorAll('.permissao-checkbox').forEach(function (checkbox) {
-                checkbox.checked = c.permissoes.indexOf(checkbox.value) !== -1;
-            });
-
             document.getElementById('cargo_acesso_total').checked = !!c.acesso_total;
-            alternarChecklistPermissoes(!!c.acesso_total);
 
             bootstrap.Modal.getOrCreateInstance('#modalCargo').show();
         })

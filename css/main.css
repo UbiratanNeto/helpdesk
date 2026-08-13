@@ -391,6 +391,88 @@ body {
     border-bottom: 1px solid var(--border-line);
 }
 
+/* Cabeçalho de modal do Bootstrap com o gradiente da marca — genérico, qualquer
+   modal.modal-header pode usar isso, não é exclusivo de uma tela específica. */
+.hd-modal-header--gradient {
+    background: var(--helpdesk-gradient);
+    border-bottom: none;
+    border-top-left-radius: var(--bs-modal-border-radius, 0.5rem);
+    border-top-right-radius: var(--bs-modal-border-radius, 0.5rem);
+}
+
+.hd-modal-header--gradient .modal-title {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   Checklist de Permissões (modal "Permissões" de Usuários) — cada seção
+   (um item solto, ou um grupo com filhas) é um cartão único com borda.
+   Genérico: reaproveitável em qualquer outra tela que precise da mesma UI.
+   ========================================================================== */
+.hd-permissao-secao {
+    border: 1px solid var(--border-line);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.hd-permissao-secao + .hd-permissao-secao {
+    margin-top: 1rem;
+}
+
+.hd-permissao-secao__grupo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.1rem;
+    background-color: var(--bg-body);
+    border-bottom: 1px solid var(--border-line);
+}
+
+.hd-permissao-secao__grupo-titulo {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.hd-permissao-badge-submenu {
+    background-color: var(--border-line);
+    color: var(--muted-color);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+}
+
+.hd-permissao-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.1rem;
+}
+
+.hd-permissao-item + .hd-permissao-item {
+    border-top: 1px solid var(--border-line);
+}
+
+.hd-permissao-item__label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.hd-permissao-item__label i {
+    color: var(--muted-color);
+    width: 1.1em;
+    text-align: center;
+}
+
 .hd-card__header--row {
     display: flex;
     align-items: center;

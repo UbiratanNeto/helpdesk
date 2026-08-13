@@ -37,4 +37,16 @@ unset($usuario['senha']); // Nunca envia o hash de senha para a tela
 $fotoExiste = !empty($usuario['foto']) && file_exists(__DIR__ . '/../../../uploads/perfil/' . $usuario['foto']);
 $usuario['foto_url'] = $fotoExiste ? '../uploads/perfil/' . $usuario['foto'] : '../uploads/perfil/sem_foto.png';
 
+// Permissões individuais (tela de Permissões) e se o cargo dele já dá acesso total
+$stmtPerm = $pdo->prepare("SELECT menu_id FROM usuario_permissoes WHERE usuario_id = ?");
+$stmtPerm->execute([$id]);
+$usuario['permissoes'] = $stmtPerm->fetchAll(PDO::FETCH_COLUMN);
+
+$usuario['acesso_total'] = 0;
+if (!empty($usuario['cargo_id'])) {
+    $stmtCargo = $pdo->prepare("SELECT acesso_total FROM cargos WHERE id = ?");
+    $stmtCargo->execute([$usuario['cargo_id']]);
+    $usuario['acesso_total'] = (int) $stmtCargo->fetchColumn();
+}
+
 resp(true, '', ['data' => $usuario]);

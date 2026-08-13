@@ -2,8 +2,8 @@
 /**
  * painel/includes/sidebar.php
  * Menu lateral dinâmico — renderizado a partir do catálogo único (menus.php) e filtrado
- * pelas permissões do cargo do usuário logado (permissoes.php). Criar uma página nova ou
- * mudar quem pode ver o quê não exige tocar neste arquivo — só o catálogo/as permissões.
+ * pelas permissões do usuário logado (permissoes.php). Criar uma página nova ou mudar
+ * quem pode ver o quê não exige tocar neste arquivo — só o catálogo/as permissões.
  */
 
 require_once __DIR__ . '/permissoes.php';
@@ -16,7 +16,7 @@ $catalogo = require __DIR__ . '/menus.php';
 $grupos   = $catalogo['grupos'];
 $paginas  = $catalogo['paginas'];
 
-$menusPermitidos = menusPermitidos($pdo, $_SESSION['cargo_id'] ?? null);
+$menusPermitidos = menusPermitidos($pdo, $_SESSION['id'] ?? null, $_SESSION['cargo_id'] ?? null);
 
 // Função idêntica à do seu curso para ativar o menu correto
 function menuAtivo($pagina, $atual) {

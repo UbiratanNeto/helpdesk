@@ -211,6 +211,101 @@
     </div>
 </div>
 
+<!-- Modal Permissões (por usuário) — checklist gerado a partir de painel/includes/menus.php -->
+<div class="modal fade" id="modalPermissoes" tabindex="-1" aria-labelledby="modalPermissoesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form id="formPermissoes">
+                <div class="modal-header hd-modal-header--gradient">
+                    <h5 class="modal-title d-flex align-items-center gap-2" id="modalPermissoesLabel">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        Permissões do Usuário
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" id="permissoes_usuario_id" name="usuario_id">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h6 class="fw-bold mb-1" id="permissoesNomeUsuario"></h6>
+                            <p class="text-muted small mb-0">Marque os menus que este usuário poderá acessar.</p>
+                        </div>
+                        <div class="btn-group btn-group-sm flex-shrink-0">
+                            <button type="button" class="btn btn-outline-primary" id="btnMarcarTodasPermissoes">Marcar todas</button>
+                            <button type="button" class="btn btn-outline-secondary" id="btnDesmarcarTodasPermissoes">Desmarcar todas</button>
+                        </div>
+                    </div>
+
+                    <?php
+                        $catalogoMenus = require __DIR__ . '/../includes/menus.php';
+                        foreach ($catalogoMenus['ordem_principal'] as $item):
+                            if (isset($catalogoMenus['grupos'][$item])):
+                                $grupo = $catalogoMenus['grupos'][$item];
+                                $filhas = array_filter($catalogoMenus['paginas'], function ($p) use ($item) {
+                                    return ($p['grupo'] ?? null) === $item;
+                                });
+                    ?>
+                        <div class="hd-permissao-secao">
+                            <div class="hd-permissao-secao__grupo-header">
+                                <span class="hd-permissao-secao__grupo-titulo">
+                                    <i class="<?php echo htmlspecialchars($grupo['icone'], ENT_QUOTES, 'UTF-8'); ?>"></i>
+                                    <?php echo htmlspecialchars($grupo['label'], ENT_QUOTES, 'UTF-8'); ?>
+                                </span>
+                                <span class="hd-permissao-badge-submenu">Submenu</span>
+                            </div>
+                            <?php foreach ($filhas as $slug => $pagina): ?>
+                                <div class="hd-permissao-item">
+                                    <span class="hd-permissao-item__label">
+                                        <i class="<?php echo htmlspecialchars($pagina['icone'], ENT_QUOTES, 'UTF-8'); ?>"></i>
+                                        <?php echo htmlspecialchars($pagina['label'], ENT_QUOTES, 'UTF-8'); ?>
+                                    </span>
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input permissao-checkbox" type="checkbox" role="switch" name="permissoes[]" value="<?php echo htmlspecialchars($slug, ENT_QUOTES, 'UTF-8'); ?>" id="uperm_<?php echo htmlspecialchars($slug, ENT_QUOTES, 'UTF-8'); ?>">
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php
+                            elseif (isset($catalogoMenus['paginas'][$item])):
+                                $pagina = $catalogoMenus['paginas'][$item];
+                    ?>
+                        <div class="hd-permissao-secao">
+                            <div class="hd-permissao-item">
+                                <span class="hd-permissao-item__label">
+                                    <i class="<?php echo htmlspecialchars($pagina['icone'], ENT_QUOTES, 'UTF-8'); ?>"></i>
+                                    <?php echo htmlspecialchars($pagina['label'], ENT_QUOTES, 'UTF-8'); ?>
+                                </span>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input permissao-checkbox" type="checkbox" role="switch" name="permissoes[]" value="<?php echo htmlspecialchars($item, ENT_QUOTES, 'UTF-8'); ?>" id="uperm_<?php echo htmlspecialchars($item, ENT_QUOTES, 'UTF-8'); ?>">
+                                </div>
+                            </div>
+                        </div>
+                    <?php
+                            endif;
+                        endforeach;
+                    ?>
+
+                    <!-- "Outros": permissões que o usuário já tem gravadas mas que não correspondem a
+                         nenhuma página do catálogo atual (ex.: página removida depois de já ter sido
+                         liberada). Preenchido via JS em permissoes(id) — não escondemos isso sem avisar. -->
+                    <div id="permissoesOutrosWrapper" class="hd-permissao-secao" style="display: none;">
+                        <div class="hd-permissao-secao__grupo-header">
+                            <span class="hd-permissao-secao__grupo-titulo">Outros</span>
+                        </div>
+                        <div id="permissoesOutrosLista"></div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnSalvarPermissoes">Salvar Permissões</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Modal de confirmação de exclusão — substitui o confirm() nativo do navegador -->
 <div class="modal fade" id="modalConfirmarExclusao" tabindex="-1" aria-labelledby="modalConfirmarExclusaoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -237,4 +332,4 @@
 <script src="https://cdn.datatables.net/1.13.11/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<script src="assets/js/usuarios.js"></script>
+<script src="assets/js/usuarios.js<?php echo asset_v('painel/assets/js/usuarios.js'); ?>"></script>

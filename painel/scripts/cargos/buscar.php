@@ -1,8 +1,7 @@
 <?php
 /**
  * painel/scripts/cargos/buscar.php
- * Devolve os dados de um cargo, incluindo acesso_total e a lista de menus permitidos —
- * usado pra pré-preencher o modal de edição (nome + checklist de permissões).
+ * Devolve os dados de um cargo (nome + acesso_total), pra pré-preencher o modal de edição.
  */
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -34,9 +33,5 @@ if (!$cargo) {
 }
 
 $cargo['acesso_total'] = (int) $cargo['acesso_total'];
-
-$stmtPerm = $pdo->prepare("SELECT menu FROM cargo_permissoes WHERE cargo_id = ?");
-$stmtPerm->execute([$id]);
-$cargo['permissoes'] = $stmtPerm->fetchAll(PDO::FETCH_COLUMN);
 
 resp(true, '', ['data' => $cargo]);
