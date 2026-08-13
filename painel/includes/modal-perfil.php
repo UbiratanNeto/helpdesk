@@ -143,8 +143,8 @@ $perfil_foto_existe  = $perfil_foto_arquivo !== '' && file_exists(__DIR__ . '/..
 <script src="assets/js/imask.min.js"></script>
 
 <!-- Seus scripts de Máscara e Funções/ViaCEP -->
-<script src="assets/js/masks.js"></script>
-<script src="assets/js/functions.js"></script>
+<script src="assets/js/masks.js<?php echo asset_v('painel/assets/js/masks.js'); ?>"></script>
+<script src="assets/js/functions.js<?php echo asset_v('painel/assets/js/functions.js'); ?>"></script>
 
 <!-- O envio do formulário (fetch + upload de arquivo + alerta de sucesso/erro) é tratado
      de forma genérica por painel/assets/js/ajax-form.js, que já reconhece este form pela action. -->

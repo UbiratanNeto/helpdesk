@@ -28,7 +28,7 @@ $db_servidor = 'localhost';     // AJUSTADO: Voltando para localhost (XAMPP)
 $db_usuario  = 'root';          // Padrão do XAMPP é root
 $db_senha    = '';              // AJUSTADO: No XAMPP a senha por padrão vem VAZIA
 $db_banco    = 'helpdesk';      // AJUSTADO: O nome do banco que você criou manualmente
-$db_charset  = 'utf8mb4';
+$db_charset  = 'utf8';
 
 try {
     $dsn = "mysql:host={$db_servidor};dbname={$db_banco};charset={$db_charset}";

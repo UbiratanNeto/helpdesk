@@ -22,7 +22,15 @@ if (empty($_SESSION['id'])) {
 require_once __DIR__ . '/../../../conexao.php';
 
 try {
-    $stmt = $pdo->query("SELECT id, nome, email, telefone, foto, nivel, ativo FROM usuarios ORDER BY id DESC");
+    // JOIN com cargos só pra saber se é um cargo de acesso_total (ex.: Administrador) —
+    // usado no front pra desabilitar o botão de Permissões nesses usuários.
+    $stmt = $pdo->query("
+        SELECT u.id, u.nome, u.email, u.telefone, u.foto, u.nivel, u.ativo,
+               COALESCE(c.acesso_total, 0) AS acesso_total
+        FROM usuarios u
+        LEFT JOIN cargos c ON c.id = u.cargo_id
+        ORDER BY u.id DESC
+    ");
     $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $data = [];
@@ -30,13 +38,14 @@ try {
         $fotoExiste = !empty($user['foto']) && file_exists(__DIR__ . '/../../../uploads/perfil/' . $user['foto']);
 
         $data[] = [
-            'id'        => (int) $user['id'],
-            'nome'      => $user['nome'],
-            'email'     => $user['email'],
-            'telefone'  => $user['telefone'],
-            'nivel'     => $user['nivel'],
-            'ativo'     => (int) $user['ativo'],
-            'foto_url'  => $fotoExiste ? '../uploads/perfil/' . $user['foto'] : '../uploads/perfil/sem_foto.png',
+            'id'           => (int) $user['id'],
+            'nome'         => $user['nome'],
+            'email'        => $user['email'],
+            'telefone'     => $user['telefone'],
+            'nivel'        => $user['nivel'],
+            'ativo'        => (int) $user['ativo'],
+            'acesso_total' => (int) $user['acesso_total'],
+            'foto_url'     => $fotoExiste ? '../uploads/perfil/' . $user['foto'] : '../uploads/perfil/sem_foto.png',
         ];
     }
 

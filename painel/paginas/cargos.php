@@ -36,7 +36,7 @@
 
 <!-- Modal Cargo (Cadastrar / Editar) -->
 <div class="modal fade" id="modalCargo" tabindex="-1" aria-labelledby="modalCargoLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form id="formCargo">
                 <div class="modal-header">
@@ -51,52 +51,13 @@
                         <input type="text" id="cargo_nome" name="nome" class="form-control" required maxlength="75">
                     </div>
 
-                    <hr class="my-4">
-                    <h6 class="text-uppercase text-muted small fw-bold mb-3">Permissões</h6>
-
-                    <div class="form-check form-switch mb-3">
+                    <div class="form-check form-switch mb-1">
                         <input class="form-check-input" type="checkbox" role="switch" id="cargo_acesso_total" name="acesso_total" value="1">
                         <label class="form-check-label" for="cargo_acesso_total">
-                            Acesso total <span class="text-muted fw-normal">(vê todos os menus do sistema, inclusive os que forem criados depois)</span>
+                            Acesso total <span class="text-muted fw-normal">(usuários com esse cargo veem todos os menus do sistema)</span>
                         </label>
                     </div>
-
-                    <div id="areaPermissoesMenus" class="row g-2">
-                        <?php
-                            $catalogoMenus = require __DIR__ . '/../includes/menus.php';
-                            foreach ($catalogoMenus['ordem_principal'] as $item):
-                                if (isset($catalogoMenus['grupos'][$item])):
-                                    $grupo = $catalogoMenus['grupos'][$item];
-                                    $filhas = array_filter($catalogoMenus['paginas'], function ($p) use ($item) {
-                                        return ($p['grupo'] ?? null) === $item;
-                                    });
-                        ?>
-                            <div class="col-12 mt-2">
-                                <small class="text-uppercase text-muted fw-bold"><?php echo htmlspecialchars($grupo['label'], ENT_QUOTES, 'UTF-8'); ?></small>
-                            </div>
-                            <?php foreach ($filhas as $slug => $pagina): ?>
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input permissao-checkbox" type="checkbox" name="permissoes[]" value="<?php echo htmlspecialchars($slug, ENT_QUOTES, 'UTF-8'); ?>" id="permissao_<?php echo htmlspecialchars($slug, ENT_QUOTES, 'UTF-8'); ?>">
-                                        <label class="form-check-label" for="permissao_<?php echo htmlspecialchars($slug, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($pagina['label'], ENT_QUOTES, 'UTF-8'); ?></label>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php
-                                elseif (isset($catalogoMenus['paginas'][$item])):
-                                    $pagina = $catalogoMenus['paginas'][$item];
-                        ?>
-                            <div class="col-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input permissao-checkbox" type="checkbox" name="permissoes[]" value="<?php echo htmlspecialchars($item, ENT_QUOTES, 'UTF-8'); ?>" id="permissao_<?php echo htmlspecialchars($item, ENT_QUOTES, 'UTF-8'); ?>">
-                                    <label class="form-check-label" for="permissao_<?php echo htmlspecialchars($item, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($pagina['label'], ENT_QUOTES, 'UTF-8'); ?></label>
-                                </div>
-                            </div>
-                        <?php
-                                endif;
-                            endforeach;
-                        ?>
-                    </div>
+                    <p class="form-text">As demais permissões (por menu) agora são configuradas por usuário, na tela de Usuários.</p>
                 </div>
 
                 <div class="modal-footer">
@@ -133,4 +94,4 @@
 <script src="https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.11/js/dataTables.bootstrap5.min.js"></script>
 
-<script src="assets/js/cargos.js"></script>
+<script src="assets/js/cargos.js<?php echo asset_v('painel/assets/js/cargos.js'); ?>"></script>

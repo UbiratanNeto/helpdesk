@@ -14,10 +14,10 @@ $pagina = $_GET['p'] ?? 'dashboard';
 $catalogo = require __DIR__ . '/includes/menus.php';
 $paginas_permitidas = array_keys($catalogo['paginas']);
 
-// Além de existir no catálogo, o cargo do usuário logado precisa ter permissão pra essa
-// página específica (RBAC — ver painel/includes/permissoes.php).
+// Além de existir no catálogo, o usuário logado precisa ter permissão pra essa página
+// específica — por usuário, exceto quem tem cargo com acesso_total (ver permissoes.php).
 $paginaValida = in_array($pagina, $paginas_permitidas, true)
-    && podeAcessarPagina($pdo, $_SESSION['cargo_id'] ?? null, $pagina);
+    && podeAcessarPagina($pdo, $_SESSION['id'] ?? null, $_SESSION['cargo_id'] ?? null, $pagina);
 
 if (!$paginaValida) {
     $pagina = 'dashboard';
@@ -94,12 +94,12 @@ $bg_color = (!empty($cor_fundo)) ? $cor_fundo : '#f8fafc';
     </div> <!-- Fim de .hd-layout -->
 
     <!-- Carregamento do script de controle do painel -->
-    <script src="assets/js/painel.js"></script>
+    <script src="assets/js/painel.js<?php echo asset_v('painel/assets/js/painel.js'); ?>"></script>
     <!-- Modais do painel (cada um em seu próprio arquivo, ligados pelos links do topbar) -->
     <?php include 'includes/modal-configuracoes.php'; ?>
     <?php include 'includes/modal-perfil.php'; ?>
     <!-- Intercepta o envio dos formulários dos modais via fetch (Configurações e Perfil) -->
-    <script src="assets/js/ajax-form.js"></script>
+    <script src="assets/js/ajax-form.js<?php echo asset_v('painel/assets/js/ajax-form.js'); ?>"></script>
 
     
 

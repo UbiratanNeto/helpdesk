@@ -4,6 +4,8 @@
  * Cabeçalho global do Painel
  */
 
+require_once __DIR__ . '/assets.php';
+
 // Se as variáveis não estiverem definidas no escopo atual, assume os fallbacks padrão
 $primary   = $cor_primaria ?? '#4f46e5';
 $secondary = $cor_secundaria ?? '#818cf8';
@@ -36,8 +38,11 @@ if (!preg_match('/^#[a-fA-F0-9]{3,8}$/', $secondary)) {
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
 
-<!-- O seu arquivo ÚNICO de estilos, localizado na raiz de estilos do Helpdesk -->
-<link rel="stylesheet" href="../css/main.css">
+<!-- O seu arquivo ÚNICO de estilos, localizado na raiz de estilos do Helpdesk.
+     asset_v() adiciona "?v=<data de modificação>": sem isso, como o main.css não manda
+     Cache-Control, o navegador às vezes serve a versão antiga do cache mesmo com
+     recarregamento forçado (heurística de cache do próprio navegador). -->
+<link rel="stylesheet" href="../css/main.css<?php echo asset_v('css/main.css'); ?>">
 
 <!-- ChartJS: carregado só na página que realmente usa gráfico -->
 <?php if (($pagina ?? '') === 'dashboard'): ?>
@@ -47,4 +52,4 @@ if (!preg_match('/^#[a-fA-F0-9]{3,8}$/', $secondary)) {
 <!-- SweetAlert2 + Mensagens: usados pelo ajax-form.js para dar retorno visual
      ao salvar os modais (Configurações, Perfil), sem sair da página. -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="../js/mensagens.js"></script>
+<script src="../js/mensagens.js<?php echo asset_v('js/mensagens.js'); ?>"></script>
