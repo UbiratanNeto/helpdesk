@@ -22,10 +22,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/../../../conexao.php';
+require_once __DIR__ . '/../../includes/permissoes.php';
 
 $id           = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
 $nome         = trim($_POST['nome'] ?? '');
 $acesso_total = isset($_POST['acesso_total']) ? 1 : 0;
+
+// Permissão de AÇÃO (global, não por página) — criar ou editar dependendo se veio um $id
+$acao = $id ? 'editar' : 'criar';
+if (!podeExecutarAcao($pdo, $_SESSION['id'] ?? null, $_SESSION['cargo_id'] ?? null, $acao)) {
+    resp(false, 'Você não tem permissão para ' . ($id ? 'editar' : 'criar') . ' cargos.');
+}
 
 if ($nome === '') {
     resp(false, 'Informe o nome do cargo.');

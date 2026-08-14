@@ -5,6 +5,7 @@
  */
 
 require_once __DIR__ . '/assets.php';
+require_once __DIR__ . '/permissoes.php';
 
 // Se as variáveis não estiverem definidas no escopo atual, assume os fallbacks padrão
 $primary   = $cor_primaria ?? '#4f46e5';
@@ -53,3 +54,13 @@ if (!preg_match('/^#[a-fA-F0-9]{3,8}$/', $secondary)) {
      ao salvar os modais (Configurações, Perfil), sem sair da página. -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../js/mensagens.js<?php echo asset_v('js/mensagens.js'); ?>"></script>
+
+<!-- Permissões de AÇÃO (criar/editar/excluir) do usuário logado — globais, não por página.
+     Todo *.js de entidade (usuarios.js, cargos.js, clientes.js...) lê isso antes de desenhar
+     os botões da coluna Ações, já que todos usam o mesmo padrão novo()/editar()/excluir(). -->
+<script>
+    window.PERMISSOES_ACAO = <?php echo json_encode(
+        permissoesAcaoUsuarioLogado($pdo, $_SESSION['id'] ?? null, $_SESSION['cargo_id'] ?? null),
+        JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP
+    ); ?>;
+</script>

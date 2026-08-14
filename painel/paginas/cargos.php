@@ -15,9 +15,11 @@
             <i class="fa-solid fa-briefcase" style="color: var(--cor-primaria); margin-right: 0.5rem;"></i>
             Cargos
         </h2>
+        <?php if (podeExecutarAcao($pdo, $_SESSION['id'] ?? null, $_SESSION['cargo_id'] ?? null, 'criar')): ?>
         <button type="button" class="hd-btn hd-btn--primary hd-btn--sm" onclick="novo()">
             <i class="fa-solid fa-plus" style="margin-right: 0.4rem;"></i>Novo Cargo
         </button>
+        <?php endif; ?>
     </div>
     <div class="hd-card__body">
         <div class="table-responsive">

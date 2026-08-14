@@ -43,3 +43,53 @@ function menusPermitidos(PDO $pdo, ?int $usuarioId, ?int $cargoId): array {
 function podeAcessarPagina(PDO $pdo, ?int $usuarioId, ?int $cargoId, string $pagina): bool {
     return in_array($pagina, menusPermitidos($pdo, $usuarioId, $cargoId), true);
 }
+
+/**
+ * Permissão de ação (criar/editar/excluir) — diferente de menusPermitidos(), essa é
+ * GLOBAL, não por página: vale pra qualquer tela (Usuários, Cargos, Clientes, e as que
+ * vierem depois), porque todas usam o mesmo padrão de botões novo()/editar()/excluir().
+ * Cargo com acesso_total continua irrestrito, igual ao acesso a menus.
+ *
+ * @param string $acao 'criar' | 'editar' | 'excluir'
+ */
+function podeExecutarAcao(PDO $pdo, ?int $usuarioId, ?int $cargoId, string $acao): bool {
+    $colunas = [
+        'criar'   => 'permissao_criar',
+        'editar'  => 'permissao_editar',
+        'excluir' => 'permissao_excluir',
+    ];
+    if (!isset($colunas[$acao])) {
+        return false; // ação desconhecida — nega por padrão, não libera por engano
+    }
+
+    if ($cargoId) {
+        $stmt = $pdo->prepare("SELECT acesso_total FROM cargos WHERE id = ?");
+        $stmt->execute([$cargoId]);
+        if ($stmt->fetchColumn()) {
+            return true;
+        }
+    }
+
+    if (!$usuarioId) {
+        return false;
+    }
+
+    $coluna = $colunas[$acao];
+    $stmt = $pdo->prepare("SELECT {$coluna} FROM usuarios WHERE id = ?");
+    $stmt->execute([$usuarioId]);
+    return (bool) $stmt->fetchColumn();
+}
+
+/**
+ * Devolve as 3 permissões de ação do usuário logado de uma vez, prontas pra virar
+ * JSON e alimentar window.PERMISSOES_ACAO no front-end.
+ *
+ * @return array{criar: bool, editar: bool, excluir: bool}
+ */
+function permissoesAcaoUsuarioLogado(PDO $pdo, ?int $usuarioId, ?int $cargoId): array {
+    return [
+        'criar'   => podeExecutarAcao($pdo, $usuarioId, $cargoId, 'criar'),
+        'editar'  => podeExecutarAcao($pdo, $usuarioId, $cargoId, 'editar'),
+        'excluir' => podeExecutarAcao($pdo, $usuarioId, $cargoId, 'excluir'),
+    ];
+}

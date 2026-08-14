@@ -30,10 +30,18 @@ $(function () {
             { data: 'nome' },
             {
                 data: 'id', orderable: false, className: 'text-end', render: function (id) {
-                    return '<div class="btn-group btn-group-sm">'
-                        + '<button type="button" class="btn btn-outline-secondary btn-editar" data-id="' + id + '" title="Editar"><i class="fa-solid fa-pen"></i></button>'
-                        + '<button type="button" class="btn btn-outline-danger btn-excluir" data-id="' + id + '" title="Excluir"><i class="fa-solid fa-trash"></i></button>'
-                        + '</div>';
+                    // Permissões de AÇÃO do usuário LOGADO (globais — painel/includes/head.php)
+                    const permissoesAcao = window.PERMISSOES_ACAO || { editar: true, excluir: true };
+
+                    let html = '<div class="btn-group btn-group-sm">';
+                    if (permissoesAcao.editar) {
+                        html += '<button type="button" class="btn btn-outline-secondary btn-editar" data-id="' + id + '" title="Editar"><i class="fa-solid fa-pen"></i></button>';
+                    }
+                    if (permissoesAcao.excluir) {
+                        html += '<button type="button" class="btn btn-outline-danger btn-excluir" data-id="' + id + '" title="Excluir"><i class="fa-solid fa-trash"></i></button>';
+                    }
+                    html += '</div>';
+                    return html;
                 }
             },
         ],

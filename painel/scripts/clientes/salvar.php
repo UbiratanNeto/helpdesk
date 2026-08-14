@@ -22,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/../../../conexao.php';
+require_once __DIR__ . '/../../includes/permissoes.php';
 
 /**
  * Valida e salva o upload da foto em uploads/clientes/.
@@ -93,6 +94,12 @@ $bairro      = trim($_POST['bairro'] ?? '');
 $cidade      = trim($_POST['cidade'] ?? '');
 $estado      = strtoupper(trim($_POST['estado'] ?? ''));
 $observacoes = trim($_POST['observacoes'] ?? '');
+
+// Permissão de AÇÃO (global, não por página) — criar ou editar dependendo se veio um $id
+$acao = $id ? 'editar' : 'criar';
+if (!podeExecutarAcao($pdo, $_SESSION['id'] ?? null, $_SESSION['cargo_id'] ?? null, $acao)) {
+    resp(false, 'Você não tem permissão para ' . ($id ? 'editar' : 'criar') . ' clientes.');
+}
 
 // ===== Validações =====
 if ($nome === '') {
