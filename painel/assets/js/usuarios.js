@@ -65,12 +65,21 @@ $(function () {
                         ? 'Este usuário já tem acesso total pelo cargo'
                         : 'Permissões';
 
-                    return '<div class="btn-group btn-group-sm">'
-                        + '<button type="button" class="btn btn-outline-primary btn-visualizar" data-id="' + id + '" title="Visualizar"><i class="fa-solid fa-eye"></i></button>'
-                        + '<button type="button" class="btn btn-outline-secondary btn-editar" data-id="' + id + '" title="Editar"><i class="fa-solid fa-pen"></i></button>'
-                        + '<button type="button" class="btn btn-outline-secondary btn-permissoes" data-id="' + id + '" title="' + tituloPermissoes + '"' + (permissoesDesabilitado ? ' disabled' : '') + '><i class="fa-solid fa-key"></i></button>'
-                        + '<button type="button" class="btn btn-outline-danger btn-excluir" data-id="' + id + '" title="Excluir"><i class="fa-solid fa-trash"></i></button>'
-                        + '</div>';
+                    // Permissões de AÇÃO (criar/editar/excluir) do usuário LOGADO — globais,
+                    // definidas em painel/includes/head.php. Editar/Excluir somem se não tiver.
+                    const permissoesAcao = window.PERMISSOES_ACAO || { editar: true, excluir: true };
+
+                    let html = '<div class="btn-group btn-group-sm">';
+                    html += '<button type="button" class="btn btn-outline-primary btn-visualizar" data-id="' + id + '" title="Visualizar"><i class="fa-solid fa-eye"></i></button>';
+                    if (permissoesAcao.editar) {
+                        html += '<button type="button" class="btn btn-outline-secondary btn-editar" data-id="' + id + '" title="Editar"><i class="fa-solid fa-pen"></i></button>';
+                    }
+                    html += '<button type="button" class="btn btn-outline-secondary btn-permissoes" data-id="' + id + '" title="' + tituloPermissoes + '"' + (permissoesDesabilitado ? ' disabled' : '') + '><i class="fa-solid fa-key"></i></button>';
+                    if (permissoesAcao.excluir) {
+                        html += '<button type="button" class="btn btn-outline-danger btn-excluir" data-id="' + id + '" title="Excluir"><i class="fa-solid fa-trash"></i></button>';
+                    }
+                    html += '</div>';
+                    return html;
                 }
             },
         ],
@@ -243,6 +252,12 @@ function permissoes(id) {
 
             $('#permissoes_usuario_id').val(u.id);
             $('#permissoesNomeUsuario').text(u.nome || '');
+
+            // Permissões de AÇÃO (globais, colunas em usuarios — não fazem parte do
+            // checklist de menus, por isso não usam a classe .permissao-checkbox)
+            $('#permissao_criar').prop('checked', !!Number(u.permissao_criar));
+            $('#permissao_editar').prop('checked', !!Number(u.permissao_editar));
+            $('#permissao_excluir').prop('checked', !!Number(u.permissao_excluir));
 
             const checkboxesConhecidos = document.querySelectorAll('#formPermissoes .permissao-checkbox');
             const valoresConhecidos = Array.from(checkboxesConhecidos).map(function (c) { return c.value; });

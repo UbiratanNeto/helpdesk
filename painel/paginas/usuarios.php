@@ -14,9 +14,11 @@
             <i class="fa-solid fa-users" style="color: var(--cor-primaria); margin-right: 0.5rem;"></i>
             Usuários
         </h2>
+        <?php if (podeExecutarAcao($pdo, $_SESSION['id'] ?? null, $_SESSION['cargo_id'] ?? null, 'criar')): ?>
         <button type="button" class="hd-btn hd-btn--primary hd-btn--sm" onclick="novo()">
             <i class="fa-solid fa-plus" style="margin-right: 0.4rem;"></i>Novo Usuário
         </button>
+        <?php endif; ?>
     </div>
     <div class="hd-card__body">
         <div class="table-responsive">
@@ -234,6 +236,37 @@
                         <div class="btn-group btn-group-sm flex-shrink-0">
                             <button type="button" class="btn btn-outline-primary" id="btnMarcarTodasPermissoes">Marcar todas</button>
                             <button type="button" class="btn btn-outline-secondary" id="btnDesmarcarTodasPermissoes">Desmarcar todas</button>
+                        </div>
+                    </div>
+
+                    <!-- Permissões de AÇÃO — globais (valem em qualquer tela: Usuários, Cargos,
+                         Clientes...), diferente do checklist abaixo que é por página. -->
+                    <div class="hd-permissao-secao mb-3">
+                        <div class="hd-permissao-secao__grupo-header">
+                            <span class="hd-permissao-secao__grupo-titulo">
+                                <i class="fa-solid fa-sliders"></i>
+                                Ações no sistema
+                            </span>
+                        </div>
+                        <div class="hd-permissao-item hd-permissao-item--acoes">
+                            <div class="hd-permissao-acao">
+                                <span class="hd-permissao-item__label"><i class="fa-solid fa-plus"></i>Criar registros</span>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" role="switch" name="permissao_criar" value="1" id="permissao_criar">
+                                </div>
+                            </div>
+                            <div class="hd-permissao-acao">
+                                <span class="hd-permissao-item__label"><i class="fa-solid fa-pen"></i>Editar registros</span>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" role="switch" name="permissao_editar" value="1" id="permissao_editar">
+                                </div>
+                            </div>
+                            <div class="hd-permissao-acao">
+                                <span class="hd-permissao-item__label"><i class="fa-solid fa-trash"></i>Excluir registros</span>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" role="switch" name="permissao_excluir" value="1" id="permissao_excluir">
+                                </div>
+                            </div>
                         </div>
                     </div>
 

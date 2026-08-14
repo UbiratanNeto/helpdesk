@@ -24,14 +24,27 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/../../../conexao.php';
+require_once __DIR__ . '/../../includes/permissoes.php';
+
+// Configurar as permissões de outro usuário é, na prática, uma edição desse usuário —
+// mesma permissão de ação que já vale pro resto da tela de Usuários.
+if (!podeExecutarAcao($pdo, $_SESSION['id'] ?? null, $_SESSION['cargo_id'] ?? null, 'editar')) {
+    resp(false, 'Você não tem permissão para editar permissões de usuários.');
+}
 
 $usuario_id = filter_input(INPUT_POST, 'usuario_id', FILTER_VALIDATE_INT);
 if (!$usuario_id) {
     resp(false, 'Usuário inválido.');
 }
 
-// Só aceita, como permissão, menus que existem de verdade no catálogo — evita gravar
-// lixo em usuario_permissoes vindo de um POST manipulado.
+// Permissões de AÇÃO (globais): presente no POST = ligado, ausente = desligado — igual
+// a qualquer checkbox HTML comum.
+$permissao_criar   = isset($_POST['permissao_criar']) ? 1 : 0;
+$permissao_editar  = isset($_POST['permissao_editar']) ? 1 : 0;
+$permissao_excluir = isset($_POST['permissao_excluir']) ? 1 : 0;
+
+// Só aceita, como permissão de menu, páginas que existem de verdade no catálogo — evita
+// gravar lixo em usuario_permissoes vindo de um POST manipulado.
 $catalogo       = require __DIR__ . '/../../includes/menus.php';
 $menusValidos   = array_keys($catalogo['paginas']);
 $permissoesPost = $_POST['permissoes'] ?? [];
@@ -56,8 +69,21 @@ try {
 
     $pdo->beginTransaction();
 
-    // Ressincroniza: apaga tudo e regrava o conjunto atual enviado pelo form. Mais simples
-    // e seguro contra inconsistência do que tentar calcular um diff.
+    // Permissões de AÇÃO: são colunas simples em usuarios, então é um UPDATE direto.
+    $stmtAcao = $pdo->prepare("
+        UPDATE usuarios
+        SET permissao_criar = :criar, permissao_editar = :editar, permissao_excluir = :excluir
+        WHERE id = :id
+    ");
+    $stmtAcao->execute([
+        ':criar'   => $permissao_criar,
+        ':editar'  => $permissao_editar,
+        ':excluir' => $permissao_excluir,
+        ':id'      => $usuario_id,
+    ]);
+
+    // Permissões de MENU: ressincroniza — apaga tudo e regrava o conjunto atual enviado
+    // pelo form. Mais simples e seguro contra inconsistência do que calcular um diff.
     $stmtDel = $pdo->prepare("DELETE FROM usuario_permissoes WHERE usuario_id = ?");
     $stmtDel->execute([$usuario_id]);
 

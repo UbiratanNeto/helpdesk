@@ -473,6 +473,20 @@ body {
     text-align: center;
 }
 
+/* Variação "em linha" do item — usada nas Permissões de AÇÃO (Criar/Editar/Excluir
+   lado a lado, em vez de uma abaixo da outra) */
+.hd-permissao-item--acoes {
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.hd-permissao-acao {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
 .hd-card__header--row {
     display: flex;
     align-items: center;

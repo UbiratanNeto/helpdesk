@@ -17,6 +17,11 @@ if (empty($_SESSION['id'])) {
 }
 
 require_once __DIR__ . '/../../../conexao.php';
+require_once __DIR__ . '/../../includes/permissoes.php';
+
+if (!podeExecutarAcao($pdo, $_SESSION['id'] ?? null, $_SESSION['cargo_id'] ?? null, 'excluir')) {
+    resp(false, 'Você não tem permissão para excluir cargos.');
+}
 
 $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
 if (!$id) {
