@@ -83,6 +83,7 @@ $id          = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
 $nome        = trim($_POST['nome'] ?? '');
 $email       = trim($_POST['email'] ?? '');
 $telefone    = trim($_POST['telefone'] ?? '');
+$ddi         = preg_replace('/\D/', '', trim($_POST['ddi'] ?? '')) ?: '55';
 $cpf         = trim($_POST['cpf'] ?? '');
 $endereco    = trim($_POST['endereco'] ?? '');
 $numero      = trim($_POST['numero'] ?? '');
@@ -135,6 +136,21 @@ try {
         resp(false, 'Este e-mail já está cadastrado por outro usuário.');
     }
 
+    // Telefone duplicado (considerando outros usuários, não o próprio ao editar) — comparado
+    // só pelos dígitos + DDI, pra não deixar passar duplicidade por formatação diferente
+    // (ex.: "(92) 7228-925" vs "92 7228925").
+    if ($telefone !== '') {
+        $telefoneDigitos = preg_replace('/\D/', '', $telefone);
+        $stmtTel = $pdo->prepare("SELECT id, ddi, telefone FROM usuarios WHERE telefone != '' AND telefone IS NOT NULL AND id != ?");
+        $stmtTel->execute([$id ?? 0]);
+        foreach ($stmtTel->fetchAll() as $outro) {
+            $outroDigitos = preg_replace('/\D/', '', $outro['telefone']);
+            if ($outroDigitos === $telefoneDigitos && $outro['ddi'] === $ddi) {
+                resp(false, 'Este telefone já está cadastrado por outro usuário.');
+            }
+        }
+    }
+
     // Foto atual (pra saber o que apagar, se uma nova for enviada)
     $fotoAtual = '';
     if ($id) {
@@ -145,7 +161,7 @@ try {
     $novaFoto = processarUploadFotoUsuario($fotoAtual);
 
     $params = [
-        ':nome' => $nome, ':email' => $email, ':telefone' => $telefone, ':cpf' => $cpf,
+        ':nome' => $nome, ':email' => $email, ':telefone' => $telefone, ':ddi' => $ddi, ':cpf' => $cpf,
         ':endereco' => $endereco, ':numero' => $numero, ':complemento' => $complemento,
         ':bairro' => $bairro, ':cidade' => $cidade, ':estado' => $estado, ':cep' => $cep,
         ':nivel' => $nivel, ':cargo_id' => $cargo_id, ':ativo' => $ativo,
@@ -154,7 +170,7 @@ try {
     if ($id) {
         // ===== Atualização (UPDATE) =====
         $set = [
-            'nome = :nome', 'email = :email', 'telefone = :telefone', 'cpf = :cpf',
+            'nome = :nome', 'email = :email', 'telefone = :telefone', 'ddi = :ddi', 'cpf = :cpf',
             'endereco = :endereco', 'numero = :numero', 'complemento = :complemento',
             'bairro = :bairro', 'cidade = :cidade', 'estado = :estado', 'cep = :cep',
             'nivel = :nivel', 'cargo_id = :cargo_id', 'ativo = :ativo', 'data_atualizacao = NOW()',
@@ -182,12 +198,42 @@ try {
         $params[':foto']  = $novaFoto; // pode ser null; a coluna aceita NULL
 
         $stmt = $pdo->prepare("
-            INSERT INTO usuarios (nome, email, telefone, cpf, endereco, numero, complemento, bairro, cidade, estado, cep, nivel, cargo_id, ativo, senha, foto)
-            VALUES (:nome, :email, :telefone, :cpf, :endereco, :numero, :complemento, :bairro, :cidade, :estado, :cep, :nivel, :cargo_id, :ativo, :senha, :foto)
+            INSERT INTO usuarios (nome, email, telefone, ddi, cpf, endereco, numero, complemento, bairro, cidade, estado, cep, nivel, cargo_id, ativo, senha, foto)
+            VALUES (:nome, :email, :telefone, :ddi, :cpf, :endereco, :numero, :complemento, :bairro, :cidade, :estado, :cep, :nivel, :cargo_id, :ativo, :senha, :foto)
         ");
         $stmt->execute($params);
 
-        resp(true, 'Usuário cadastrado com sucesso!');
+        // Envia as credenciais de acesso por WhatsApp (se houver telefone informado e uma API
+        // configurada em Configurações). Não bloqueia o cadastro caso o envio falhe.
+        $whatsappEnviado = null;
+        $whatsappErro    = null;
+        if ($telefone !== '') {
+            require_once __DIR__ . '/../../apis/whatsapp.php';
+
+            $numeroWhatsapp = preg_replace('/\D/', '', $telefone);
+            if ($numeroWhatsapp !== '' && substr($numeroWhatsapp, 0, strlen($ddi)) !== $ddi) {
+                $numeroWhatsapp = $ddi . $numeroWhatsapp;
+            }
+
+            $protocolo = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $baseUrl   = rtrim(dirname($_SERVER['SCRIPT_NAME'], 4), '/');
+            $urlAcesso = $protocolo . '://' . $_SERVER['HTTP_HOST'] . $baseUrl . '/index.php';
+
+            $mensagemBoasVindas = "Olá, {$nome}! Sua conta no {$nome_sistema} foi criada.\n\n"
+                . "Acesso: {$urlAcesso}\n"
+                . "E-mail: {$email}\n"
+                . "Senha: {$senha}\n\n"
+                . "Recomendamos alterar sua senha no primeiro acesso.";
+
+            $resultadoWhatsapp = enviarWhatsapp($numeroWhatsapp, $mensagemBoasVindas);
+            $whatsappEnviado   = $resultadoWhatsapp['sucesso'];
+            $whatsappErro      = $resultadoWhatsapp['erro'] ?? null;
+        }
+
+        resp(true, 'Usuário cadastrado com sucesso!', [
+            'whatsapp_enviado' => $whatsappEnviado,
+            'whatsapp_erro'    => $whatsappErro,
+        ]);
     }
 } catch (PDOException $e) {
     resp(false, 'Erro no banco de dados: ' . $e->getMessage());

@@ -153,6 +153,14 @@ if ($config) {
     $smtp_porta     = $config['smtp_porta']     ?? '';
     $smtp_seguranca = $config['smtp_seguranca'] ?? '';
 
+    // Api de WhatsApp (ex.: Menuia) — token único e perpétuo da conta (equivale ao
+    // antigo par authkey/appkey), fornecido no painel da própria API.
+    // device_whatsapp: ID da conexão/dispositivo específico (canal WhatsApp V2) — necessário
+    // pra API saber por qual número conectado rotear o envio (Menuia → Canais).
+    $api_whatsapp    = $config['api_whatsapp']    ?? '';
+    $token_whatsapp  = $config['token_whatsapp']  ?? '';
+    $device_whatsapp = $config['device_whatsapp'] ?? '';
+
     // A senha é salva criptografada (AES-256-GCM); aqui já devolvemos o valor descriptografado
     // pra uso futuro (ex.: enviar e-mail). Um valor salvo ANTES dessa criptografia existir
     // (texto puro) não decripta — nesse caso caímos de volta pro texto original, com aviso no log.

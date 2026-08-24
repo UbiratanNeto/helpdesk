@@ -77,7 +77,15 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="usuario_telefone">Telefone</label>
-                            <input type="text" id="usuario_telefone" name="telefone" class="form-control" placeholder="(00) 00000-0000">
+                            <div class="input-group">
+                                <select id="usuario_ddi" name="ddi" class="form-select" style="max-width: 100px;">
+                                    <option value="" selected>DDI</option>
+                                    <option value="55">🇧🇷 +55</option>
+                                    <option value="351">🇵🇹 +351</option>
+                                </select>
+                                <input type="text" id="usuario_telefone" name="telefone" class="form-control" placeholder="(00) 00000-0000">
+                            </div>
+                            <div class="form-text">DDI usado no envio de WhatsApp (boas-vindas, notificações).</div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="usuario_senha">Senha <span id="usuarioSenhaHint" class="text-muted fw-normal small">(mínimo 6 caracteres)</span></label>
