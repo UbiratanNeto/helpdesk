@@ -113,6 +113,27 @@ $config_icone_existe   = $config_icone_arquivo !== '' && file_exists(__DIR__ . '
                         </select>
                     </div>
                     <p class="hd-field__hint" style="grid-column: 1 / -1; margin-top: -0.5rem;">Deixe a senha em branco para não alterar (quando você implementar o update).</p>
+
+                    <div class="hd-form-divider"></div>
+                    <h4 class="hd-form-section-title">Apis do Sistema</h4>
+
+                    <div class="hd-field">
+                        <label class="hd-field__label" for="api_whatsapp">Api Whatsapp</label>
+                        <?php $api_whatsapp_atual = $api_whatsapp ?? ''; ?>
+                        <select id="api_whatsapp" name="api_whatsapp" class="hd-field__input hd-field__input--plain">
+                            <option value="" <?php echo $api_whatsapp_atual === '' ? 'selected' : ''; ?>>Nenhuma</option>
+                            <option value="menuia" <?php echo $api_whatsapp_atual === 'menuia' ? 'selected' : ''; ?>>Menuia</option>
+                        </select>
+                    </div>
+                    <div class="hd-field">
+                        <label class="hd-field__label" for="token_whatsapp">Token</label>
+                        <input type="text" id="token_whatsapp" name="token_whatsapp" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($token_whatsapp ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="Token de API">
+                    </div>
+                    <div class="hd-field">
+                        <label class="hd-field__label" for="device_whatsapp">ID da Conexão (Device)</label>
+                        <input type="text" id="device_whatsapp" name="device_whatsapp" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($device_whatsapp ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="deviceId">
+                    </div>
+                    <p class="hd-field__hint" style="grid-column: 1 / -1; margin-top: -0.5rem;">Token e ID da conexão ficam disponíveis no painel da própria API (ex.: Menuia &rarr; Guia de API &rarr; Suas conexões).</p>
                 </div>
 
                 <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">

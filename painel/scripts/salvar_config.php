@@ -85,6 +85,9 @@ $smtp_host        = trim($_POST['smtp_host'] ?? '');
 $smtp_porta       = trim($_POST['smtp_porta'] ?? '');
 $smtp_seguranca   = trim($_POST['smtp_seguranca'] ?? '');
 $smtp_senha_bruta = $_POST['smtp_senha'] ?? '';
+$api_whatsapp    = trim($_POST['api_whatsapp'] ?? '');
+$token_whatsapp  = trim($_POST['token_whatsapp'] ?? '');
+$device_whatsapp = trim($_POST['device_whatsapp'] ?? '');
 
 try {
     // $logo/$icone aqui são os valores ATUAIS (carregados pelo conexao.php no topo deste
@@ -102,6 +105,9 @@ try {
         'smtp_host = :smtp_host',
         'smtp_porta = :smtp_porta',
         'smtp_seguranca = :smtp_seguranca',
+        'api_whatsapp = :api_whatsapp',
+        'token_whatsapp = :token_whatsapp',
+        'device_whatsapp = :device_whatsapp',
     ];
     $params = [
         ':nome_sistema'     => $nome_sistema,
@@ -113,6 +119,9 @@ try {
         ':smtp_host'        => $smtp_host,
         ':smtp_porta'       => $smtp_porta,
         ':smtp_seguranca'   => $smtp_seguranca,
+        ':api_whatsapp'     => $api_whatsapp,
+        ':token_whatsapp'   => $token_whatsapp,
+        ':device_whatsapp'  => $device_whatsapp,
     ];
 
     // Senha SMTP: só entra no UPDATE se veio preenchida (em branco = mantém a que já existe)

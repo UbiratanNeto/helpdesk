@@ -196,6 +196,7 @@ function editar(id) {
             $('#usuario_id').val(u.id);
             $('#usuario_nome').val(u.nome || '');
             $('#usuario_email').val(u.email || '');
+            $('#usuario_ddi').val(u.ddi || '55');
             $('#usuario_telefone').val(u.telefone || '');
             $('#usuario_cpf').val(u.cpf || '');
             $('#usuario_cep').val(u.cep || '');
@@ -369,6 +370,14 @@ function confirmarExclusao() {
 }
 
 function salvar(form) {
+    const telefone = $('#usuario_telefone').val().trim();
+    const ddi = $('#usuario_ddi').val();
+    if (telefone !== '' && ddi === '') {
+        Mensagens.aviso('Selecione o DDI', 'Você preencheu um telefone, mas não escolheu o DDI (código do país) — sem isso a mensagem de boas-vindas por WhatsApp não sai pro número certo.');
+        $('#usuario_ddi').focus();
+        return;
+    }
+
     const botao = document.getElementById('btnSalvarUsuario');
     const textoOriginal = botao.textContent;
     botao.disabled = true;
@@ -383,7 +392,14 @@ function salvar(form) {
             if (dados.ok) {
                 bootstrap.Modal.getOrCreateInstance('#modalUsuario').hide();
                 tabela.ajax.reload(null, false);
-                Mensagens.sucesso('Sucesso!', dados.msg);
+
+                if (dados.whatsapp_enviado === true) {
+                    Mensagens.sucesso('Sucesso!', dados.msg + ' Mensagem de boas-vindas enviada por WhatsApp.');
+                } else if (dados.whatsapp_enviado === false) {
+                    Mensagens.aviso('Usuário salvo, mas...', dados.msg + ' Não foi possível enviar o WhatsApp: ' + (dados.whatsapp_erro || 'motivo desconhecido') + '.');
+                } else {
+                    Mensagens.sucesso('Sucesso!', dados.msg);
+                }
             } else {
                 Mensagens.erro('Atenção', dados.msg);
             }
