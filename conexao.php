@@ -147,6 +147,11 @@ if ($config) {
     $icone    = $config['icone']    ?? $icone;
     $endereco = $config['endereco'] ?? $endereco;
 
+    // URL fixa de acesso ao sistema (usada, por ex., na mensagem de boas-vindas por WhatsApp).
+    // Fixa e configurável em vez de calculada por requisição — evita depender de qual página
+    // disparou a chamada.
+    $url_sistema = $config['url_sistema'] ?? '';
+
     // Dados de SMTP: host/porta/segurança podem ir pro formulário de configurações normalmente.
     // $smtp_senha NUNCA deve ser impresso em HTML — existe aqui só pra uso futuro no envio de e-mails.
     $smtp_host      = $config['smtp_host']      ?? '';
@@ -158,8 +163,45 @@ if ($config) {
     // device_whatsapp: ID da conexão/dispositivo específico (canal WhatsApp V2) — necessário
     // pra API saber por qual número conectado rotear o envio (Menuia → Canais).
     $api_whatsapp    = $config['api_whatsapp']    ?? '';
-    $token_whatsapp  = $config['token_whatsapp']  ?? '';
     $device_whatsapp = $config['device_whatsapp'] ?? '';
+
+    // O token é salvo criptografado (AES-256-GCM, mesmo esquema da senha SMTP); aqui já
+    // devolvemos o valor descriptografado pra uso nas chamadas da API.
+    $token_whatsapp_criptografado = $config['token_whatsapp'] ?? '';
+    $token_whatsapp = '';
+    if ($token_whatsapp_criptografado !== '') {
+        try {
+            $token_whatsapp = smtp_decrypt($token_whatsapp_criptografado);
+        } catch (Throwable $e) {
+            error_log('Aviso: token_whatsapp no banco não está no formato criptografado esperado (dado antigo?). ' . $e->getMessage());
+            $token_whatsapp = $token_whatsapp_criptografado;
+        }
+        // smtp_decrypt() devolve '' silenciosamente (sem lançar exceção) quando o valor não está
+        // em base64 válido — cobre o caso de um token salvo em texto puro ANTES dessa criptografia
+        // existir (ex.: contém "-"/"_", típicos de JWT, que não são base64 padrão).
+        if ($token_whatsapp === '') {
+            $token_whatsapp = $token_whatsapp_criptografado;
+        }
+    }
+
+    // WhatsApp Cloud (Meta) — canal adicional, além do WhatsApp V2 acima. phoneNumberId não é
+    // segredo (é só um identificador); accessToken é credencial de verdade, salvo criptografado
+    // no mesmo esquema do token_whatsapp.
+    $whatsapp_cloud_phone_id = $config['whatsapp_cloud_phone_id'] ?? '';
+
+    $whatsapp_cloud_token_criptografado = $config['whatsapp_cloud_token'] ?? '';
+    $whatsapp_cloud_token = '';
+    if ($whatsapp_cloud_token_criptografado !== '') {
+        try {
+            $whatsapp_cloud_token = smtp_decrypt($whatsapp_cloud_token_criptografado);
+        } catch (Throwable $e) {
+            error_log('Aviso: whatsapp_cloud_token no banco não está no formato criptografado esperado (dado antigo?). ' . $e->getMessage());
+            $whatsapp_cloud_token = $whatsapp_cloud_token_criptografado;
+        }
+        if ($whatsapp_cloud_token === '') {
+            $whatsapp_cloud_token = $whatsapp_cloud_token_criptografado;
+        }
+    }
 
     // A senha é salva criptografada (AES-256-GCM); aqui já devolvemos o valor descriptografado
     // pra uso futuro (ex.: enviar e-mail). Um valor salvo ANTES dessa criptografia existir
