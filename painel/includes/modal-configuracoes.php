@@ -44,6 +44,11 @@ $config_icone_existe   = $config_icone_arquivo !== '' && file_exists(__DIR__ . '
                         <label class="hd-field__label" for="endereco">Endereço</label>
                         <input type="text" id="endereco" name="endereco" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($endereco ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="Endereço">
                     </div>
+                    <div class="hd-field" style="grid-column: 1 / -1;">
+                        <label class="hd-field__label" for="url_sistema">URL de Acesso do Sistema</label>
+                        <input type="text" id="url_sistema" name="url_sistema" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($url_sistema ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="http://localhost/helpdesk">
+                        <p class="hd-field__hint" style="margin-top: 0.25rem;">Usada em mensagens automáticas (ex.: boas-vindas por WhatsApp). Sem barra no final.</p>
+                    </div>
 
                     <div class="hd-form-divider"></div>
                     <h4 class="hd-form-section-title">Identidade Visual</h4>
@@ -117,23 +122,41 @@ $config_icone_existe   = $config_icone_arquivo !== '' && file_exists(__DIR__ . '
                     <div class="hd-form-divider"></div>
                     <h4 class="hd-form-section-title">Apis do Sistema</h4>
 
-                    <div class="hd-field">
+                    <div class="hd-field" style="grid-column: 1 / -1;">
                         <label class="hd-field__label" for="api_whatsapp">Api Whatsapp</label>
                         <?php $api_whatsapp_atual = $api_whatsapp ?? ''; ?>
                         <select id="api_whatsapp" name="api_whatsapp" class="hd-field__input hd-field__input--plain">
                             <option value="" <?php echo $api_whatsapp_atual === '' ? 'selected' : ''; ?>>Nenhuma</option>
-                            <option value="menuia" <?php echo $api_whatsapp_atual === 'menuia' ? 'selected' : ''; ?>>Menuia</option>
+                            <option value="menuia" <?php echo $api_whatsapp_atual === 'menuia' ? 'selected' : ''; ?>>Menuia (WhatsApp V2)</option>
+                            <option value="meta" <?php echo $api_whatsapp_atual === 'meta' ? 'selected' : ''; ?>>WhatsApp Cloud (Meta)</option>
                         </select>
                     </div>
-                    <div class="hd-field">
-                        <label class="hd-field__label" for="token_whatsapp">Token</label>
-                        <input type="text" id="token_whatsapp" name="token_whatsapp" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($token_whatsapp ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="Token de API">
+
+                    <!-- Campos por provedor — só um grupo fica visível por vez, controlado pelo select acima.
+                         display:contents faz os filhos participarem do grid do pai como se o wrapper não existisse. -->
+                    <div id="camposApiMenuia" style="display: contents;">
+                        <div class="hd-field">
+                            <label class="hd-field__label" for="token_whatsapp">Token</label>
+                            <input type="text" id="token_whatsapp" name="token_whatsapp" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($token_whatsapp ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="Token de API">
+                        </div>
+                        <div class="hd-field">
+                            <label class="hd-field__label" for="device_whatsapp">ID da Conexão (Device)</label>
+                            <input type="text" id="device_whatsapp" name="device_whatsapp" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($device_whatsapp ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="deviceId">
+                        </div>
+                        <p class="hd-field__hint" style="grid-column: 1 / -1; margin-top: -0.5rem;">Token e ID da conexão ficam disponíveis no painel da própria API (ex.: Menuia &rarr; Guia de API &rarr; Suas conexões).</p>
                     </div>
-                    <div class="hd-field">
-                        <label class="hd-field__label" for="device_whatsapp">ID da Conexão (Device)</label>
-                        <input type="text" id="device_whatsapp" name="device_whatsapp" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($device_whatsapp ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="deviceId">
+
+                    <div id="camposApiMeta" style="display: contents;">
+                        <div class="hd-field">
+                            <label class="hd-field__label" for="whatsapp_cloud_phone_id">Phone Number ID</label>
+                            <input type="text" id="whatsapp_cloud_phone_id" name="whatsapp_cloud_phone_id" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($whatsapp_cloud_phone_id ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="phoneNumberId">
+                        </div>
+                        <div class="hd-field">
+                            <label class="hd-field__label" for="whatsapp_cloud_token">Access Token</label>
+                            <input type="text" id="whatsapp_cloud_token" name="whatsapp_cloud_token" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($whatsapp_cloud_token ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="accessToken">
+                        </div>
+                        <p class="hd-field__hint" style="grid-column: 1 / -1; margin-top: -0.5rem;">Disponível em Menuia &rarr; Canais &rarr; WhatsApp Cloud.</p>
                     </div>
-                    <p class="hd-field__hint" style="grid-column: 1 / -1; margin-top: -0.5rem;">Token e ID da conexão ficam disponíveis no painel da própria API (ex.: Menuia &rarr; Guia de API &rarr; Suas conexões).</p>
                 </div>
 
                 <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
@@ -166,6 +189,25 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+
+    // Alterna os campos visíveis de API de WhatsApp conforme o provedor escolhido —
+    // só o grupo do provedor selecionado fica na tela, o resto some (mas mantém o valor salvo).
+    const selectApi = document.getElementById('api_whatsapp');
+    const gruposApi = {
+        menuia: document.getElementById('camposApiMenuia'),
+        meta: document.getElementById('camposApiMeta'),
+    };
+
+    function atualizarCamposApi() {
+        Object.keys(gruposApi).forEach(function (chave) {
+            gruposApi[chave].style.display = (chave === selectApi.value) ? 'contents' : 'none';
+        });
+    }
+
+    if (selectApi) {
+        selectApi.addEventListener('change', atualizarCamposApi);
+        atualizarCamposApi();
+    }
 });
 </script>
 

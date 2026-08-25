@@ -215,9 +215,9 @@ try {
                 $numeroWhatsapp = $ddi . $numeroWhatsapp;
             }
 
-            $protocolo = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-            $baseUrl   = rtrim(dirname($_SERVER['SCRIPT_NAME'], 4), '/');
-            $urlAcesso = $protocolo . '://' . $_SERVER['HTTP_HOST'] . $baseUrl . '/index.php';
+            // URL fixa, definida em Configurações do Sistema — não depende de qual página
+            // disparou essa requisição.
+            $urlAcesso = ($url_sistema !== '' ? $url_sistema : '') . '/index.php';
 
             $mensagemBoasVindas = "Olá, {$nome}! Sua conta no {$nome_sistema} foi criada.\n\n"
                 . "Acesso: {$urlAcesso}\n"
@@ -225,9 +225,15 @@ try {
                 . "Senha: {$senha}\n\n"
                 . "Recomendamos alterar sua senha no primeiro acesso.";
 
-            $resultadoWhatsapp = enviarWhatsapp($numeroWhatsapp, $mensagemBoasVindas);
-            $whatsappEnviado   = $resultadoWhatsapp['sucesso'];
-            $whatsappErro      = $resultadoWhatsapp['erro'] ?? null;
+            // Dispara pelo provedor escolhido em Configurações — os dois usam a mesma assinatura
+            // (número, mensagem) então o restante do fluxo não precisa saber qual é.
+            $resultadoWhatsapp = match ($api_whatsapp) {
+                'menuia' => enviarWhatsapp($numeroWhatsapp, $mensagemBoasVindas),
+                'meta'   => enviarWhatsappCloud($numeroWhatsapp, $mensagemBoasVindas),
+                default  => ['sucesso' => false, 'erro' => 'Nenhuma API de WhatsApp configurada.'],
+            };
+            $whatsappEnviado = $resultadoWhatsapp['sucesso'];
+            $whatsappErro    = $resultadoWhatsapp['erro'] ?? null;
         }
 
         resp(true, 'Usuário cadastrado com sucesso!', [

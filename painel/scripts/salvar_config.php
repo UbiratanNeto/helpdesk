@@ -79,6 +79,7 @@ $nome_sistema     = trim($_POST['nome_sistema'] ?? '');
 $telefone_sistema = trim($_POST['telefone_sistema'] ?? '');
 $email_sistema    = trim($_POST['email_sistema'] ?? '');
 $endereco_novo    = trim($_POST['endereco'] ?? '');
+$url_sistema      = rtrim(trim($_POST['url_sistema'] ?? ''), '/');
 $cor_primaria     = trim($_POST['cor_primaria'] ?? '');
 $cor_secundaria   = trim($_POST['cor_secundaria'] ?? '');
 $smtp_host        = trim($_POST['smtp_host'] ?? '');
@@ -88,6 +89,8 @@ $smtp_senha_bruta = $_POST['smtp_senha'] ?? '';
 $api_whatsapp    = trim($_POST['api_whatsapp'] ?? '');
 $token_whatsapp  = trim($_POST['token_whatsapp'] ?? '');
 $device_whatsapp = trim($_POST['device_whatsapp'] ?? '');
+$whatsapp_cloud_phone_id = trim($_POST['whatsapp_cloud_phone_id'] ?? '');
+$whatsapp_cloud_token    = trim($_POST['whatsapp_cloud_token'] ?? '');
 
 try {
     // $logo/$icone aqui são os valores ATUAIS (carregados pelo conexao.php no topo deste
@@ -100,6 +103,7 @@ try {
         'telefone_sistema = :telefone_sistema',
         'email_sistema = :email_sistema',
         'endereco = :endereco',
+        'url_sistema = :url_sistema',
         'cor_primaria = :cor_primaria',
         'cor_secundaria = :cor_secundaria',
         'smtp_host = :smtp_host',
@@ -108,20 +112,27 @@ try {
         'api_whatsapp = :api_whatsapp',
         'token_whatsapp = :token_whatsapp',
         'device_whatsapp = :device_whatsapp',
+        'whatsapp_cloud_phone_id = :whatsapp_cloud_phone_id',
+        'whatsapp_cloud_token = :whatsapp_cloud_token',
     ];
     $params = [
         ':nome_sistema'     => $nome_sistema,
         ':telefone_sistema' => $telefone_sistema,
         ':email_sistema'    => $email_sistema,
         ':endereco'         => $endereco_novo,
+        ':url_sistema'      => $url_sistema,
         ':cor_primaria'     => $cor_primaria,
         ':cor_secundaria'   => $cor_secundaria,
         ':smtp_host'        => $smtp_host,
         ':smtp_porta'       => $smtp_porta,
         ':smtp_seguranca'   => $smtp_seguranca,
         ':api_whatsapp'     => $api_whatsapp,
-        ':token_whatsapp'   => $token_whatsapp,
+        // 🔒 CRIPTOGRAFA O TOKEN ANTES DE SALVAR NO BANCO (mesmo esquema da senha SMTP, AES-256-GCM)
+        ':token_whatsapp'   => smtp_encrypt($token_whatsapp),
         ':device_whatsapp'  => $device_whatsapp,
+        ':whatsapp_cloud_phone_id' => $whatsapp_cloud_phone_id,
+        // 🔒 CRIPTOGRAFA O ACCESS TOKEN DO WHATSAPP CLOUD (mesmo esquema do token_whatsapp)
+        ':whatsapp_cloud_token'    => smtp_encrypt($whatsapp_cloud_token),
     ];
 
     // Senha SMTP: só entra no UPDATE se veio preenchida (em branco = mantém a que já existe)
