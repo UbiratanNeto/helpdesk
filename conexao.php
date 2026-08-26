@@ -203,6 +203,25 @@ if ($config) {
         }
     }
 
+    // Evolution API — terceiro canal, self-hosted (URL própria do servidor de cada usuário).
+    // url/instance não são segredo; apikey é credencial de verdade, salva criptografada.
+    $evolution_url      = $config['evolution_url']      ?? '';
+    $evolution_instance = $config['evolution_instance'] ?? '';
+
+    $evolution_apikey_criptografado = $config['evolution_apikey'] ?? '';
+    $evolution_apikey = '';
+    if ($evolution_apikey_criptografado !== '') {
+        try {
+            $evolution_apikey = smtp_decrypt($evolution_apikey_criptografado);
+        } catch (Throwable $e) {
+            error_log('Aviso: evolution_apikey no banco não está no formato criptografado esperado (dado antigo?). ' . $e->getMessage());
+            $evolution_apikey = $evolution_apikey_criptografado;
+        }
+        if ($evolution_apikey === '') {
+            $evolution_apikey = $evolution_apikey_criptografado;
+        }
+    }
+
     // A senha é salva criptografada (AES-256-GCM); aqui já devolvemos o valor descriptografado
     // pra uso futuro (ex.: enviar e-mail). Um valor salvo ANTES dessa criptografia existir
     // (texto puro) não decripta — nesse caso caímos de volta pro texto original, com aviso no log.

@@ -129,6 +129,7 @@ $config_icone_existe   = $config_icone_arquivo !== '' && file_exists(__DIR__ . '
                             <option value="" <?php echo $api_whatsapp_atual === '' ? 'selected' : ''; ?>>Nenhuma</option>
                             <option value="menuia" <?php echo $api_whatsapp_atual === 'menuia' ? 'selected' : ''; ?>>Menuia (WhatsApp V2)</option>
                             <option value="meta" <?php echo $api_whatsapp_atual === 'meta' ? 'selected' : ''; ?>>WhatsApp Cloud (Meta)</option>
+                            <option value="evolution" <?php echo $api_whatsapp_atual === 'evolution' ? 'selected' : ''; ?>>Evolution API</option>
                         </select>
                     </div>
 
@@ -156,6 +157,22 @@ $config_icone_existe   = $config_icone_arquivo !== '' && file_exists(__DIR__ . '
                             <input type="text" id="whatsapp_cloud_token" name="whatsapp_cloud_token" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($whatsapp_cloud_token ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="accessToken">
                         </div>
                         <p class="hd-field__hint" style="grid-column: 1 / -1; margin-top: -0.5rem;">Disponível em Menuia &rarr; Canais &rarr; WhatsApp Cloud.</p>
+                    </div>
+
+                    <div id="camposApiEvolution" style="display: contents;">
+                        <div class="hd-field" style="grid-column: 1 / -1;">
+                            <label class="hd-field__label" for="evolution_url">URL do Servidor</label>
+                            <input type="text" id="evolution_url" name="evolution_url" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($evolution_url ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="https://sua-evolution.com">
+                        </div>
+                        <div class="hd-field">
+                            <label class="hd-field__label" for="evolution_instance">Instância</label>
+                            <input type="text" id="evolution_instance" name="evolution_instance" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($evolution_instance ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="nome-da-instancia">
+                        </div>
+                        <div class="hd-field">
+                            <label class="hd-field__label" for="evolution_apikey">API Key</label>
+                            <input type="text" id="evolution_apikey" name="evolution_apikey" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($evolution_apikey ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="apikey">
+                        </div>
+                        <p class="hd-field__hint" style="grid-column: 1 / -1; margin-top: -0.5rem;">Servidor próprio (self-hosted) — URL, instância e API Key ficam disponíveis no painel/documentação da sua instalação Evolution.</p>
                     </div>
                 </div>
 
@@ -196,6 +213,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const gruposApi = {
         menuia: document.getElementById('camposApiMenuia'),
         meta: document.getElementById('camposApiMeta'),
+        evolution: document.getElementById('camposApiEvolution'),
     };
 
     function atualizarCamposApi() {

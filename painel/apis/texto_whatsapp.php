@@ -8,12 +8,13 @@
 require_once __DIR__ . '/whatsapp.php'; // já inclui conexao.php e as funções de envio
 
 $numero   = '351927228925'; // Lisboa, PT — formato internacional, sem "+"
-$mensagem = 'Olá, esta é uma mensagem de teste!';
+$mensagem = 'Olá, esta é uma mensagem de teste! Parabéns, está tudo funcionando.';
 
 $resultado = match ($api_whatsapp) {
-    'menuia' => enviarWhatsapp($numero, $mensagem),
-    'meta'   => enviarWhatsappCloud($numero, $mensagem),
-    default  => ['sucesso' => false, 'erro' => 'Nenhuma API de WhatsApp configurada em Configurações do Sistema.'],
+    'menuia'    => enviarWhatsapp($numero, $mensagem),
+    'meta'      => enviarWhatsappCloud($numero, $mensagem),
+    'evolution' => enviarWhatsappEvolution($numero, $mensagem),
+    default     => ['sucesso' => false, 'erro' => 'Nenhuma API de WhatsApp configurada em Configurações do Sistema.'],
 };
 
 echo $resultado['sucesso'] ? 'Enviado com sucesso!' : ('Falha ao enviar: ' . htmlspecialchars($resultado['erro'] ?? 'erro desconhecido'));

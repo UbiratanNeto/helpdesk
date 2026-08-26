@@ -236,3 +236,55 @@ function enviarWhatsappCloudTemplate(string $numero, string $templateName, strin
 
     return ['sucesso' => true, 'resposta' => $dados];
 }
+
+/**
+ * Envia uma mensagem de texto via Evolution API — terceiro canal, self-hosted (URL própria de
+ * cada servidor). Formato do corpo baseado na Evolution API v2 (documentação oficial em
+ * doc.evolution-api.com); AINDA NÃO TESTADO com um servidor real — o payload/resposta exatos
+ * podem precisar de ajuste na primeira chamada de verdade, como já aconteceu com os outros 2 canais.
+ * Depende de $evolution_url/$evolution_instance/$evolution_apikey, carregados em conexao.php.
+ *
+ * @param string $numero   Número no formato internacional, só dígitos (ex.: 5531999999999)
+ * @param string $mensagem Texto da mensagem
+ * @return array{sucesso: bool, erro?: string, resposta?: array}
+ */
+function enviarWhatsappEvolution(string $numero, string $mensagem): array
+{
+    global $evolution_url, $evolution_instance, $evolution_apikey;
+
+    if (empty($evolution_url) || empty($evolution_instance) || empty($evolution_apikey)) {
+        return ['sucesso' => false, 'erro' => 'Evolution API não configurada — falta URL, instância e/ou API Key.'];
+    }
+
+    $url = rtrim($evolution_url, '/') . '/message/sendText/' . rawurlencode($evolution_instance);
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Content-Type: application/json",
+        "apikey: " . $evolution_apikey,
+    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+        "number" => $numero,
+        "text"   => $mensagem,
+    ]));
+
+    $respostaBruta = curl_exec($ch);
+    $erroCurl       = curl_error($ch);
+    $httpCode       = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($erroCurl) {
+        return ['sucesso' => false, 'erro' => $erroCurl];
+    }
+
+    $dados = json_decode($respostaBruta, true);
+
+    if ($httpCode < 200 || $httpCode >= 300) {
+        return ['sucesso' => false, 'erro' => $dados['message'] ?? $dados['error'] ?? "HTTP {$httpCode}", 'resposta' => $dados];
+    }
+
+    return ['sucesso' => true, 'resposta' => $dados];
+}
