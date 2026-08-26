@@ -94,6 +94,8 @@ $whatsapp_cloud_token    = trim($_POST['whatsapp_cloud_token'] ?? '');
 $evolution_url = rtrim(trim($_POST['evolution_url'] ?? ''), '/');
 $evolution_instance = trim($_POST['evolution_instance'] ?? '');
 $evolution_apikey   = trim($_POST['evolution_apikey'] ?? '');
+$api_ia   = trim($_POST['api_ia'] ?? '');
+$token_ia = trim($_POST['token_ia'] ?? '');
 
 try {
     // $logo/$icone aqui são os valores ATUAIS (carregados pelo conexao.php no topo deste
@@ -120,6 +122,8 @@ try {
         'evolution_url = :evolution_url',
         'evolution_instance = :evolution_instance',
         'evolution_apikey = :evolution_apikey',
+        'api_ia = :api_ia',
+        'token_ia = :token_ia',
     ];
     $params = [
         ':nome_sistema'     => $nome_sistema,
@@ -143,6 +147,9 @@ try {
         ':evolution_instance' => $evolution_instance,
         // 🔒 CRIPTOGRAFA A API KEY DA EVOLUTION (mesmo esquema dos outros tokens)
         ':evolution_apikey'   => smtp_encrypt($evolution_apikey),
+        ':api_ia'   => $api_ia,
+        // 🔒 CRIPTOGRAFA O TOKEN DA API DE IA (mesmo esquema dos outros tokens)
+        ':token_ia' => smtp_encrypt($token_ia),
     ];
 
     // Senha SMTP: só entra no UPDATE se veio preenchida (em branco = mantém a que já existe)
