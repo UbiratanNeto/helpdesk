@@ -91,6 +91,9 @@ $token_whatsapp  = trim($_POST['token_whatsapp'] ?? '');
 $device_whatsapp = trim($_POST['device_whatsapp'] ?? '');
 $whatsapp_cloud_phone_id = trim($_POST['whatsapp_cloud_phone_id'] ?? '');
 $whatsapp_cloud_token    = trim($_POST['whatsapp_cloud_token'] ?? '');
+$evolution_url = rtrim(trim($_POST['evolution_url'] ?? ''), '/');
+$evolution_instance = trim($_POST['evolution_instance'] ?? '');
+$evolution_apikey   = trim($_POST['evolution_apikey'] ?? '');
 
 try {
     // $logo/$icone aqui são os valores ATUAIS (carregados pelo conexao.php no topo deste
@@ -114,6 +117,9 @@ try {
         'device_whatsapp = :device_whatsapp',
         'whatsapp_cloud_phone_id = :whatsapp_cloud_phone_id',
         'whatsapp_cloud_token = :whatsapp_cloud_token',
+        'evolution_url = :evolution_url',
+        'evolution_instance = :evolution_instance',
+        'evolution_apikey = :evolution_apikey',
     ];
     $params = [
         ':nome_sistema'     => $nome_sistema,
@@ -133,6 +139,10 @@ try {
         ':whatsapp_cloud_phone_id' => $whatsapp_cloud_phone_id,
         // 🔒 CRIPTOGRAFA O ACCESS TOKEN DO WHATSAPP CLOUD (mesmo esquema do token_whatsapp)
         ':whatsapp_cloud_token'    => smtp_encrypt($whatsapp_cloud_token),
+        ':evolution_url'      => $evolution_url,
+        ':evolution_instance' => $evolution_instance,
+        // 🔒 CRIPTOGRAFA A API KEY DA EVOLUTION (mesmo esquema dos outros tokens)
+        ':evolution_apikey'   => smtp_encrypt($evolution_apikey),
     ];
 
     // Senha SMTP: só entra no UPDATE se veio preenchida (em branco = mantém a que já existe)

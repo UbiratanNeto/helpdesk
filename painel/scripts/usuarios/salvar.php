@@ -228,9 +228,10 @@ try {
             // Dispara pelo provedor escolhido em Configurações — os dois usam a mesma assinatura
             // (número, mensagem) então o restante do fluxo não precisa saber qual é.
             $resultadoWhatsapp = match ($api_whatsapp) {
-                'menuia' => enviarWhatsapp($numeroWhatsapp, $mensagemBoasVindas),
-                'meta'   => enviarWhatsappCloud($numeroWhatsapp, $mensagemBoasVindas),
-                default  => ['sucesso' => false, 'erro' => 'Nenhuma API de WhatsApp configurada.'],
+                'menuia'    => enviarWhatsapp($numeroWhatsapp, $mensagemBoasVindas),
+                'meta'      => enviarWhatsappCloud($numeroWhatsapp, $mensagemBoasVindas),
+                'evolution' => enviarWhatsappEvolution($numeroWhatsapp, $mensagemBoasVindas),
+                default     => ['sucesso' => false, 'erro' => 'Nenhuma API de WhatsApp configurada.'],
             };
             $whatsappEnviado = $resultadoWhatsapp['sucesso'];
             $whatsappErro    = $resultadoWhatsapp['erro'] ?? null;
