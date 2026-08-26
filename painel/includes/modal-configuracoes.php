@@ -174,6 +174,25 @@ $config_icone_existe   = $config_icone_arquivo !== '' && file_exists(__DIR__ . '
                         </div>
                         <p class="hd-field__hint" style="grid-column: 1 / -1; margin-top: -0.5rem;">Servidor próprio (self-hosted) — URL, instância e API Key ficam disponíveis no painel/documentação da sua instalação Evolution.</p>
                     </div>
+
+                    <div class="hd-form-divider"></div>
+                    <h4 class="hd-form-section-title">Api de IA</h4>
+
+                    <div class="hd-field">
+                        <label class="hd-field__label" for="api_ia">Api IA</label>
+                        <?php $api_ia_atual = $api_ia ?? ''; ?>
+                        <select id="api_ia" name="api_ia" class="hd-field__input hd-field__input--plain">
+                            <option value="" <?php echo $api_ia_atual === '' ? 'selected' : ''; ?>>Nenhuma</option>
+                            <option value="chatgpt" <?php echo $api_ia_atual === 'chatgpt' ? 'selected' : ''; ?>>ChatGPT</option>
+                            <option value="gemini" <?php echo $api_ia_atual === 'gemini' ? 'selected' : ''; ?>>Gemini</option>
+                            <option value="claude" <?php echo $api_ia_atual === 'claude' ? 'selected' : ''; ?>>Claude</option>
+                        </select>
+                    </div>
+                    <div class="hd-field">
+                        <label class="hd-field__label" for="token_ia">Token</label>
+                        <input type="text" id="token_ia" name="token_ia" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($token_ia ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="Token ChatGPT, Gemini ou Claude">
+                    </div>
+                    <p class="hd-field__hint" style="grid-column: 1 / -1; margin-top: -0.5rem;">Token/API Key gerado no painel do provedor escolhido.</p>
                 </div>
 
                 <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">

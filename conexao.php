@@ -182,6 +182,8 @@ if ($config) {
         if ($token_whatsapp === '') {
             $token_whatsapp = $token_whatsapp_criptografado;
         }
+        // Remove espaço/quebra de linha que pode ter vindo junto ao colar o token no campo.
+        $token_whatsapp = preg_replace('/\s+/', '', $token_whatsapp);
     }
 
     // WhatsApp Cloud (Meta) — canal adicional, além do WhatsApp V2 acima. phoneNumberId não é
@@ -201,6 +203,7 @@ if ($config) {
         if ($whatsapp_cloud_token === '') {
             $whatsapp_cloud_token = $whatsapp_cloud_token_criptografado;
         }
+        $whatsapp_cloud_token = preg_replace('/\s+/', '', $whatsapp_cloud_token);
     }
 
     // Evolution API — terceiro canal, self-hosted (URL própria do servidor de cada usuário).
@@ -220,6 +223,25 @@ if ($config) {
         if ($evolution_apikey === '') {
             $evolution_apikey = $evolution_apikey_criptografado;
         }
+        $evolution_apikey = preg_replace('/\s+/', '', $evolution_apikey);
+    }
+
+    // Api de IA (ex.: ChatGPT, Gemini, Claude) — token de acesso, salvo criptografado.
+    $api_ia = $config['api_ia'] ?? '';
+
+    $token_ia_criptografado = $config['token_ia'] ?? '';
+    $token_ia = '';
+    if ($token_ia_criptografado !== '') {
+        try {
+            $token_ia = smtp_decrypt($token_ia_criptografado);
+        } catch (Throwable $e) {
+            error_log('Aviso: token_ia no banco não está no formato criptografado esperado (dado antigo?). ' . $e->getMessage());
+            $token_ia = $token_ia_criptografado;
+        }
+        if ($token_ia === '') {
+            $token_ia = $token_ia_criptografado;
+        }
+        $token_ia = preg_replace('/\s+/', '', $token_ia);
     }
 
     // A senha é salva criptografada (AES-256-GCM); aqui já devolvemos o valor descriptografado
