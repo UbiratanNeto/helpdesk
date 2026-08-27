@@ -83,6 +83,8 @@ $id          = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
 $nome        = trim($_POST['nome'] ?? '');
 $email       = trim($_POST['email'] ?? '');
 $telefone    = trim($_POST['telefone'] ?? '');
+$ddi         = preg_replace('/\D/', '', trim($_POST['ddi'] ?? '')) ?: '55';
+$notificarCadastro = trim($_POST['notificar_cadastro'] ?? 'Sim') === 'Sim' ? 'Sim' : 'Não';
 $cpf_cnpj    = trim($_POST['cpf_cnpj'] ?? '');
 $tipo        = trim($_POST['tipo'] ?? '');
 $ativo       = trim($_POST['ativo'] ?? 'Sim');
@@ -120,8 +122,9 @@ try {
     $novaFoto = processarUploadFotoCliente($fotoAtual);
 
     $params = [
-        ':nome' => $nome, ':email' => $email ?: null, ':telefone' => $telefone ?: null,
+        ':nome' => $nome, ':email' => $email ?: null, ':telefone' => $telefone ?: null, ':ddi' => $ddi,
         ':cpf_cnpj' => $cpf_cnpj ?: null, ':tipo' => $tipo ?: null, ':ativo' => $ativo,
+        ':notificar_cadastro' => $notificarCadastro,
         ':cep' => $cep ?: null, ':endereco' => $endereco ?: null, ':numero' => $numero ?: null,
         ':complemento' => $complemento ?: null, ':bairro' => $bairro ?: null, ':cidade' => $cidade ?: null,
         ':estado' => $estado ?: null, ':observacoes' => $observacoes ?: null,
@@ -130,8 +133,9 @@ try {
     if ($id) {
         // ===== Atualização (UPDATE) =====
         $set = [
-            'nome = :nome', 'email = :email', 'telefone = :telefone', 'cpf_cnpj = :cpf_cnpj',
-            'tipo = :tipo', 'ativo = :ativo', 'cep = :cep', 'endereco = :endereco', 'numero = :numero',
+            'nome = :nome', 'email = :email', 'telefone = :telefone', 'ddi = :ddi', 'cpf_cnpj = :cpf_cnpj',
+            'tipo = :tipo', 'ativo = :ativo', 'notificar_cadastro = :notificar_cadastro',
+            'cep = :cep', 'endereco = :endereco', 'numero = :numero',
             'complemento = :complemento', 'bairro = :bairro', 'cidade = :cidade', 'estado = :estado',
             'observacoes = :observacoes',
         ];
@@ -154,12 +158,50 @@ try {
         $params[':data_cadastro'] = date('Y-m-d H:i:s');
 
         $stmt = $pdo->prepare("
-            INSERT INTO clientes (nome, email, telefone, cpf_cnpj, tipo, ativo, cep, endereco, numero, complemento, bairro, cidade, estado, observacoes, foto, data_cadastro)
-            VALUES (:nome, :email, :telefone, :cpf_cnpj, :tipo, :ativo, :cep, :endereco, :numero, :complemento, :bairro, :cidade, :estado, :observacoes, :foto, :data_cadastro)
+            INSERT INTO clientes (nome, email, telefone, ddi, cpf_cnpj, tipo, ativo, notificar_cadastro, cep, endereco, numero, complemento, bairro, cidade, estado, observacoes, foto, data_cadastro)
+            VALUES (:nome, :email, :telefone, :ddi, :cpf_cnpj, :tipo, :ativo, :notificar_cadastro, :cep, :endereco, :numero, :complemento, :bairro, :cidade, :estado, :observacoes, :foto, :data_cadastro)
         ");
         $stmt->execute($params);
 
-        resp(true, 'Cliente cadastrado com sucesso!');
+        // Envia mensagem de boas-vindas por WhatsApp, com texto gerado por IA (se houver
+        // telefone informado e uma API de WhatsApp configurada). Não bloqueia o cadastro se falhar.
+        $whatsappEnviado = null;
+        $whatsappErro    = null;
+        if ($telefone !== '' && $notificarCadastro === 'Sim') {
+            require_once __DIR__ . '/../../apis/ia.php';
+            require_once __DIR__ . '/../../apis/whatsapp.php';
+
+            $numeroWhatsapp = preg_replace('/\D/', '', $telefone);
+            if ($numeroWhatsapp !== '' && substr($numeroWhatsapp, 0, strlen($ddi)) !== $ddi) {
+                $numeroWhatsapp = $ddi . $numeroWhatsapp;
+            }
+
+            // Texto padrão, usado se a IA não estiver configurada ou a chamada falhar.
+            $mensagemBoasVindas = "Olá, {$nome}! Seu cadastro no {$nome_sistema} foi criado com sucesso. Qualquer dúvida, estamos à disposição!";
+
+            $prompt = "Crie uma mensagem curta de WhatsApp, em PT-BR, pra dar boas-vindas ao cliente "
+                . "\"{$nome}\" que acabou de se cadastrar no sistema \"{$nome_sistema}\". "
+                . "Seja cordial, breve (no máximo 3 frases) e sem emojis em excesso.";
+
+            $resultadoIA = perguntarIA($prompt);
+            if ($resultadoIA['sucesso'] && trim($resultadoIA['resposta']) !== '') {
+                $mensagemBoasVindas = trim($resultadoIA['resposta']);
+            }
+
+            $resultadoWhatsapp = match ($api_whatsapp) {
+                'menuia'    => enviarWhatsapp($numeroWhatsapp, $mensagemBoasVindas),
+                'meta'      => enviarWhatsappCloud($numeroWhatsapp, $mensagemBoasVindas),
+                'evolution' => enviarWhatsappEvolution($numeroWhatsapp, $mensagemBoasVindas),
+                default     => ['sucesso' => false, 'erro' => 'Nenhuma API de WhatsApp configurada.'],
+            };
+            $whatsappEnviado = $resultadoWhatsapp['sucesso'];
+            $whatsappErro    = $resultadoWhatsapp['erro'] ?? null;
+        }
+
+        resp(true, 'Cliente cadastrado com sucesso!', [
+            'whatsapp_enviado' => $whatsappEnviado,
+            'whatsapp_erro'    => $whatsappErro,
+        ]);
     }
 } catch (PDOException $e) {
     resp(false, 'Erro no banco de dados: ' . $e->getMessage());

@@ -156,11 +156,13 @@ function editar(id) {
 
             $('#cliente_id').val(c.id);
             $('#cliente_nome').val(c.nome || '');
+            $('#cliente_ddi').val(c.ddi || '55');
             $('#cliente_telefone').val(c.telefone || '');
             $('#cliente_cpf_cnpj').val(c.cpf_cnpj || '');
             $('#cliente_email').val(c.email || '');
             $('#cliente_tipo').val(c.tipo || 'Pessoa Física');
             $('#cliente_ativo').val(c.ativo || 'Sim');
+            $('#cliente_notificar').val(c.notificar_cadastro || 'Sim');
             $('#cliente_cep').val(c.cep || '');
             $('#cliente_estado').val(c.estado || '');
             $('#cliente_cidade').val(c.cidade || '');
@@ -219,6 +221,15 @@ function confirmarExclusao() {
 }
 
 function salvar(form) {
+    const telefone = $('#cliente_telefone').val().trim();
+    const ddi = $('#cliente_ddi').val();
+    const notificar = $('#cliente_notificar').val();
+    if (telefone !== '' && ddi === '' && notificar === 'Sim') {
+        Mensagens.aviso('Selecione o DDI', 'Você preencheu um telefone, mas não escolheu o DDI (código do país) — sem isso a mensagem de boas-vindas por WhatsApp não sai pro número certo.');
+        $('#cliente_ddi').focus();
+        return;
+    }
+
     const botao = document.getElementById('btnSalvarCliente');
     const textoOriginal = botao.textContent;
     botao.disabled = true;
@@ -233,7 +244,14 @@ function salvar(form) {
             if (dados.ok) {
                 bootstrap.Modal.getOrCreateInstance('#modalCliente').hide();
                 tabela.ajax.reload(null, false);
-                Mensagens.sucesso('Sucesso!', dados.msg);
+
+                if (dados.whatsapp_enviado === true) {
+                    Mensagens.sucesso('Sucesso!', dados.msg + ' Mensagem de boas-vindas enviada por WhatsApp.');
+                } else if (dados.whatsapp_enviado === false) {
+                    Mensagens.aviso('Cliente salvo, mas...', dados.msg + ' Não foi possível enviar o WhatsApp: ' + (dados.whatsapp_erro || 'motivo desconhecido') + '.');
+                } else {
+                    Mensagens.sucesso('Sucesso!', dados.msg);
+                }
             } else {
                 Mensagens.erro('Atenção', dados.msg);
             }

@@ -61,14 +61,21 @@
                         </div>
                         <div class="col-md-3">
                             <label class="form-label" for="cliente_telefone">Telefone</label>
-                            <input type="text" id="cliente_telefone" name="telefone" class="form-control" placeholder="(00) 00000-0000">
+                            <div class="input-group">
+                                <select id="cliente_ddi" name="ddi" class="form-select" style="max-width: 90px;">
+                                    <option value="" selected>DDI</option>
+                                    <option value="55">🇧🇷 +55</option>
+                                    <option value="351">🇵🇹 +351</option>
+                                </select>
+                                <input type="text" id="cliente_telefone" name="telefone" class="form-control" placeholder="(00) 00000-0000">
+                            </div>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label" for="cliente_cpf_cnpj">CPF/CNPJ</label>
                             <input type="text" id="cliente_cpf_cnpj" name="cpf_cnpj" class="form-control" maxlength="20">
                         </div>
 
-                        <div class="col-md-5">
+                        <div class="col-md-4">
                             <label class="form-label" for="cliente_email">E-mail</label>
                             <input type="email" id="cliente_email" name="email" class="form-control" maxlength="120">
                         </div>
@@ -79,9 +86,16 @@
                                 <option value="Pessoa Jurídica">Pessoa Jurídica</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-2">
                             <label class="form-label" for="cliente_ativo">Ativo</label>
                             <select id="cliente_ativo" name="ativo" class="form-select">
+                                <option value="Sim">Sim</option>
+                                <option value="Não">Não</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="cliente_notificar">Notificar cadastro?</label>
+                            <select id="cliente_notificar" name="notificar_cadastro" class="form-select">
                                 <option value="Sim">Sim</option>
                                 <option value="Não">Não</option>
                             </select>
