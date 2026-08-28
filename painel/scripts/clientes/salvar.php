@@ -107,6 +107,9 @@ if (!podeExecutarAcao($pdo, $_SESSION['id'] ?? null, $_SESSION['cargo_id'] ?? nu
 if ($nome === '') {
     resp(false, 'Informe o nome do cliente.');
 }
+if ($telefone === '') {
+    resp(false, 'Informe o telefone do cliente.');
+}
 if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     resp(false, 'Informe um e-mail válido.');
 }

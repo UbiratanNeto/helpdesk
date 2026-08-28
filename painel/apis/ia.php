@@ -64,7 +64,7 @@ function perguntarChatGPT(string $mensagem): array
     $dados = json_decode($respostaBruta, true);
 
     if ($httpCode < 200 || $httpCode >= 300) {
-        return ['sucesso' => false, 'erro' => $dados['error']['message'] ?? "HTTP {$httpCode}", 'resposta_bruta' => $dados];
+        return ['sucesso' => false, 'erro' => $dados['error']['message'] ?? "HTTP {$httpCode}", 'resposta_bruta' => $dados, 'http' => $httpCode];
     }
 
     $texto = $dados['choices'][0]['message']['content'] ?? null;
@@ -72,7 +72,7 @@ function perguntarChatGPT(string $mensagem): array
         return ['sucesso' => false, 'erro' => 'Resposta em formato inesperado.', 'resposta_bruta' => $dados];
     }
 
-    return ['sucesso' => true, 'resposta' => $texto];
+    return ['sucesso' => true, 'resposta' => $texto, 'http' => $httpCode];
 }
 
 /**
@@ -114,7 +114,7 @@ function perguntarGemini(string $mensagem): array
     $dados = json_decode($respostaBruta, true);
 
     if ($httpCode < 200 || $httpCode >= 300) {
-        return ['sucesso' => false, 'erro' => $dados['error']['message'] ?? "HTTP {$httpCode}", 'resposta_bruta' => $dados];
+        return ['sucesso' => false, 'erro' => $dados['error']['message'] ?? "HTTP {$httpCode}", 'resposta_bruta' => $dados, 'http' => $httpCode];
     }
 
     $texto = $dados['candidates'][0]['content']['parts'][0]['text'] ?? null;
@@ -122,7 +122,7 @@ function perguntarGemini(string $mensagem): array
         return ['sucesso' => false, 'erro' => 'Resposta em formato inesperado.', 'resposta_bruta' => $dados];
     }
 
-    return ['sucesso' => true, 'resposta' => $texto];
+    return ['sucesso' => true, 'resposta' => $texto, 'http' => $httpCode];
 }
 
 /**
@@ -165,7 +165,7 @@ function perguntarClaude(string $mensagem): array
     $dados = json_decode($respostaBruta, true);
 
     if ($httpCode < 200 || $httpCode >= 300) {
-        return ['sucesso' => false, 'erro' => $dados['error']['message'] ?? "HTTP {$httpCode}", 'resposta_bruta' => $dados];
+        return ['sucesso' => false, 'erro' => $dados['error']['message'] ?? "HTTP {$httpCode}", 'resposta_bruta' => $dados, 'http' => $httpCode];
     }
 
     $texto = $dados['content'][0]['text'] ?? null;
@@ -173,5 +173,5 @@ function perguntarClaude(string $mensagem): array
         return ['sucesso' => false, 'erro' => 'Resposta em formato inesperado.', 'resposta_bruta' => $dados];
     }
 
-    return ['sucesso' => true, 'resposta' => $texto];
+    return ['sucesso' => true, 'resposta' => $texto, 'http' => $httpCode];
 }

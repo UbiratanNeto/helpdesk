@@ -34,7 +34,14 @@ $config_icone_existe   = $config_icone_arquivo !== '' && file_exists(__DIR__ . '
                     </div>
                     <div class="hd-field">
                         <label class="hd-field__label" for="telefone_sistema">Telefone</label>
-                        <input type="text" id="telefone_sistema" name="telefone_sistema" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($telefone_sistema ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="Telefone">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <?php $ddi_sistema_atual = $ddi_sistema ?? '55'; ?>
+                            <select id="ddi_sistema" name="ddi_sistema" class="hd-field__input hd-field__input--plain" style="max-width: 90px; flex-shrink: 0;">
+                                <option value="55" <?php echo $ddi_sistema_atual === '55' ? 'selected' : ''; ?>>🇧🇷 +55</option>
+                                <option value="351" <?php echo $ddi_sistema_atual === '351' ? 'selected' : ''; ?>>🇵🇹 +351</option>
+                            </select>
+                            <input type="text" id="telefone_sistema" name="telefone_sistema" class="hd-field__input hd-field__input--plain" value="<?php echo htmlspecialchars($telefone_sistema ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="Telefone" style="flex: 1;">
+                        </div>
                     </div>
                     <div class="hd-field">
                         <label class="hd-field__label" for="email_sistema">E-mail do Sistema</label>
@@ -120,7 +127,17 @@ $config_icone_existe   = $config_icone_arquivo !== '' && file_exists(__DIR__ . '
                     <p class="hd-field__hint" style="grid-column: 1 / -1; margin-top: -0.5rem;">Deixe a senha em branco para não alterar (quando você implementar o update).</p>
 
                     <div class="hd-form-divider"></div>
-                    <h4 class="hd-form-section-title">Apis do Sistema</h4>
+                    <div style="grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center;">
+                        <h4 class="hd-form-section-title" style="margin: 0;">Apis do Sistema</h4>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button type="button" id="btnTestarWhatsapp" class="hd-btn hd-btn--ghost hd-btn--sm">
+                                <i class="fa-brands fa-whatsapp" style="margin-right: 0.35rem;"></i>Testar WhatsApp
+                            </button>
+                            <button type="button" id="btnTestarIA" class="hd-btn hd-btn--ghost hd-btn--sm">
+                                <i class="fa-solid fa-wand-magic-sparkles" style="margin-right: 0.35rem;"></i>Testar IA
+                            </button>
+                        </div>
+                    </div>
 
                     <div class="hd-field" style="grid-column: 1 / -1;">
                         <label class="hd-field__label" for="api_whatsapp">Api Whatsapp</label>
@@ -174,9 +191,6 @@ $config_icone_existe   = $config_icone_arquivo !== '' && file_exists(__DIR__ . '
                         </div>
                         <p class="hd-field__hint" style="grid-column: 1 / -1; margin-top: -0.5rem;">Servidor próprio (self-hosted) — URL, instância e API Key ficam disponíveis no painel/documentação da sua instalação Evolution.</p>
                     </div>
-
-                    <div class="hd-form-divider"></div>
-                    <h4 class="hd-form-section-title">Api de IA</h4>
 
                     <div class="hd-field">
                         <label class="hd-field__label" for="api_ia">Api IA</label>
@@ -244,6 +258,56 @@ document.addEventListener('DOMContentLoaded', function () {
     if (selectApi) {
         selectApi.addEventListener('change', atualizarCamposApi);
         atualizarCamposApi();
+    }
+
+    // Botões "Testar WhatsApp" / "Testar IA" — chamam de verdade o provedor já salvo,
+    // sem precisar sair do modal ou abrir outra página pra conferir.
+    function testarApi(url, botao) {
+        const textoOriginal = botao.innerHTML;
+        botao.disabled = true;
+        botao.innerHTML = 'Testando...';
+
+        fetch(url, { method: 'POST' })
+            .then(function (resposta) { return resposta.json(); })
+            .then(function (dados) {
+                const detalhes = dados.raw || (dados.resposta ? JSON.stringify(dados.resposta, null, 2) : '');
+                let html = '<div style="text-align:left;">';
+                html += '<p>' + dados.msg + '</p>';
+                if (dados.api) {
+                    html += '<p><strong>API:</strong> ' + dados.api + (dados.http ? ' | <strong>HTTP:</strong> ' + dados.http : '') + '</p>';
+                }
+                if (detalhes) {
+                    html += '<p><strong>Detalhes técnicos:</strong></p>'
+                        + '<pre style="white-space:pre-wrap; max-height:220px; overflow:auto; background:#f8fafc; padding:0.6rem; border-radius:6px; font-size:0.75rem;">'
+                        + detalhes.replace(/</g, '&lt;')
+                        + '</pre>';
+                }
+                html += '</div>';
+
+                Swal.fire({
+                    icon: dados.ok ? 'success' : 'error',
+                    title: dados.ok ? 'Teste realizado com sucesso' : 'Falha no teste',
+                    html: html,
+                    confirmButtonColor: '#667eea',
+                    confirmButtonText: 'Fechar',
+                });
+            })
+            .catch(function () {
+                Mensagens.erro('Erro de conexão', 'Não foi possível rodar o teste agora.');
+            })
+            .finally(function () {
+                botao.disabled = false;
+                botao.innerHTML = textoOriginal;
+            });
+    }
+
+    const btnTestarWhatsapp = document.getElementById('btnTestarWhatsapp');
+    const btnTestarIA = document.getElementById('btnTestarIA');
+    if (btnTestarWhatsapp) {
+        btnTestarWhatsapp.addEventListener('click', function () { testarApi('scripts/testar_whatsapp.php', btnTestarWhatsapp); });
+    }
+    if (btnTestarIA) {
+        btnTestarIA.addEventListener('click', function () { testarApi('scripts/testar_ia.php', btnTestarIA); });
     }
 });
 </script>

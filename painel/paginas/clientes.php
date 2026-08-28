@@ -60,14 +60,14 @@
                             <input type="text" id="cliente_nome" name="nome" class="form-control" required maxlength="120">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label" for="cliente_telefone">Telefone</label>
+                            <label class="form-label" for="cliente_telefone">Telefone *</label>
                             <div class="input-group">
                                 <select id="cliente_ddi" name="ddi" class="form-select" style="max-width: 90px;">
                                     <option value="" selected>DDI</option>
                                     <option value="55">🇧🇷 +55</option>
                                     <option value="351">🇵🇹 +351</option>
                                 </select>
-                                <input type="text" id="cliente_telefone" name="telefone" class="form-control" placeholder="(00) 00000-0000">
+                                <input type="text" id="cliente_telefone" name="telefone" class="form-control" placeholder="(00) 00000-0000" required>
                             </div>
                         </div>
                         <div class="col-md-3">

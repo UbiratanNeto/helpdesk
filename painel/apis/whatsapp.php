@@ -47,6 +47,7 @@ function enviarWhatsapp(string $numero, string $mensagem): array
 
     $respostaConversa = curl_exec($chConversa);
     $erroConversa     = curl_error($chConversa);
+    $httpConversa     = curl_getinfo($chConversa, CURLINFO_HTTP_CODE);
     curl_close($chConversa);
 
     if ($erroConversa) {
@@ -57,7 +58,7 @@ function enviarWhatsapp(string $numero, string $mensagem): array
     $ticketId = $conversa['id'] ?? null;
 
     if (!$ticketId) {
-        return ['sucesso' => false, 'erro' => $conversa['message'] ?? 'Não foi possível abrir a conversa.'];
+        return ['sucesso' => false, 'erro' => $conversa['message'] ?? 'Não foi possível abrir a conversa.', 'http' => $httpConversa];
     }
 
     // ===== PASSO 2: enviar a mensagem de fato pro ticket criado/reaproveitado =====
@@ -74,6 +75,7 @@ function enviarWhatsapp(string $numero, string $mensagem): array
 
     $respostaMensagem = curl_exec($chMensagem);
     $erroMensagem     = curl_error($chMensagem);
+    $httpMensagem     = curl_getinfo($chMensagem, CURLINFO_HTTP_CODE);
     curl_close($chMensagem);
 
     if ($erroMensagem) {
@@ -90,6 +92,7 @@ function enviarWhatsapp(string $numero, string $mensagem): array
             'sucesso'  => false,
             'erro'     => $dadosMensagem['message'] ?? 'Falha ao enviar a mensagem.',
             'ticketId' => $ticketId,
+            'http'     => $httpMensagem,
         ];
     }
     if (($dadosMensagem['deliveryStatus'] ?? null) === 'failed') {
@@ -97,10 +100,11 @@ function enviarWhatsapp(string $numero, string $mensagem): array
             'sucesso'  => false,
             'erro'     => $dadosMensagem['deliveryError'] ?? 'Falha na entrega da mensagem.',
             'ticketId' => $ticketId,
+            'http'     => $httpMensagem,
         ];
     }
 
-    return ['sucesso' => true, 'ticketId' => $ticketId];
+    return ['sucesso' => true, 'ticketId' => $ticketId, 'http' => $httpMensagem, 'resposta' => $dadosMensagem];
 }
 
 /**
@@ -151,10 +155,10 @@ function enviarWhatsappCloud(string $numero, string $mensagem): array
     $dados = json_decode($respostaBruta, true);
 
     if ($httpCode < 200 || $httpCode >= 300) {
-        return ['sucesso' => false, 'erro' => $dados['message'] ?? "HTTP {$httpCode}", 'resposta' => $dados];
+        return ['sucesso' => false, 'erro' => $dados['message'] ?? "HTTP {$httpCode}", 'resposta' => $dados, 'http' => $httpCode];
     }
     if (($dados['deliveryStatus'] ?? null) === 'failed') {
-        return ['sucesso' => false, 'erro' => $dados['deliveryError'] ?? 'Falha na entrega da mensagem.', 'resposta' => $dados];
+        return ['sucesso' => false, 'erro' => $dados['deliveryError'] ?? 'Falha na entrega da mensagem.', 'resposta' => $dados, 'http' => $httpCode];
     }
     // A Menuia pode responder HTTP 2xx só porque o PROXY funcionou, mesmo quando a Meta recusa a
     // mensagem de verdade — nesse caso vem um "error" dentro do corpo (ex.: número de teste fora
@@ -164,10 +168,10 @@ function enviarWhatsappCloud(string $numero, string $mensagem): array
             ?? $dados['data']['error']['message']
             ?? $dados['error']
             ?? 'Falha ao enviar a mensagem.';
-        return ['sucesso' => false, 'erro' => $erroMeta, 'resposta' => $dados];
+        return ['sucesso' => false, 'erro' => $erroMeta, 'resposta' => $dados, 'http' => $httpCode];
     }
 
-    return ['sucesso' => true, 'resposta' => $dados];
+    return ['sucesso' => true, 'resposta' => $dados, 'http' => $httpCode];
 }
 
 /**
@@ -283,8 +287,8 @@ function enviarWhatsappEvolution(string $numero, string $mensagem): array
     $dados = json_decode($respostaBruta, true);
 
     if ($httpCode < 200 || $httpCode >= 300) {
-        return ['sucesso' => false, 'erro' => $dados['message'] ?? $dados['error'] ?? "HTTP {$httpCode}", 'resposta' => $dados];
+        return ['sucesso' => false, 'erro' => $dados['message'] ?? $dados['error'] ?? "HTTP {$httpCode}", 'resposta' => $dados, 'http' => $httpCode];
     }
 
-    return ['sucesso' => true, 'resposta' => $dados];
+    return ['sucesso' => true, 'resposta' => $dados, 'http' => $httpCode];
 }
