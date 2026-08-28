@@ -138,6 +138,7 @@ if ($config) {
     // Carrega as demais informações salvas no banco
     $nome_sistema     = $config['nome_sistema']     ?? $nome_sistema;
     $telefone_sistema = $config['telefone_sistema'] ?? $telefone_sistema;
+    $ddi_sistema      = $config['ddi_sistema']      ?? '55';
     $email_sistema    = $config['email_sistema']    ?? $email_sistema;
     $id_empresa       = (int) ($config['empresa']   ?? $id_empresa);
 

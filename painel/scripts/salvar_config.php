@@ -77,6 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Resgata os dados enviados pelo formulário
 $nome_sistema     = trim($_POST['nome_sistema'] ?? '');
 $telefone_sistema = trim($_POST['telefone_sistema'] ?? '');
+$ddi_sistema      = preg_replace('/\D/', '', trim($_POST['ddi_sistema'] ?? '')) ?: '55';
 $email_sistema    = trim($_POST['email_sistema'] ?? '');
 $endereco_novo    = trim($_POST['endereco'] ?? '');
 $url_sistema      = rtrim(trim($_POST['url_sistema'] ?? ''), '/');
@@ -106,6 +107,7 @@ try {
     $set = [
         'nome_sistema = :nome_sistema',
         'telefone_sistema = :telefone_sistema',
+        'ddi_sistema = :ddi_sistema',
         'email_sistema = :email_sistema',
         'endereco = :endereco',
         'url_sistema = :url_sistema',
@@ -128,6 +130,7 @@ try {
     $params = [
         ':nome_sistema'     => $nome_sistema,
         ':telefone_sistema' => $telefone_sistema,
+        ':ddi_sistema'      => $ddi_sistema,
         ':email_sistema'    => $email_sistema,
         ':endereco'         => $endereco_novo,
         ':url_sistema'      => $url_sistema,
