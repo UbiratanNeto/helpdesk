@@ -18,6 +18,7 @@ if (empty($_SESSION['id'])) {
 
 require_once __DIR__ . '/../../../conexao.php';
 require_once __DIR__ . '/../../includes/permissoes.php';
+require_once __DIR__ . '/../../../painel/funcoes/logs.php';
 
 if (!podeExecutarAcao($pdo, $_SESSION['id'] ?? null, $_SESSION['cargo_id'] ?? null, 'excluir')) {
     resp(false, 'Você não tem permissão para excluir usuários.');
@@ -29,8 +30,8 @@ if (!$id) {
 }
 
 try {
-    // Buscar e apagar foto antiga se existir (exceto o fallback padrão do sistema)
-    $stmt = $pdo->prepare("SELECT foto FROM usuarios WHERE id = ?");
+    // Buscar nome/foto ANTES de apagar — precisa pro log e pra saber qual arquivo remover
+    $stmt = $pdo->prepare("SELECT nome, foto FROM usuarios WHERE id = ?");
     $stmt->execute([$id]);
     $usuario = $stmt->fetch();
 
@@ -43,6 +44,9 @@ try {
 
     $stmtDelete = $pdo->prepare("DELETE FROM usuarios WHERE id = ?");
     $stmtDelete->execute([$id]);
+
+    $nomeUsuario = $usuario['nome'] ?? "#{$id}";
+    registrarLog($pdo, 'excluir', 'usuario', $id, "Usuário \"{$nomeUsuario}\" excluído");
 
     resp(true, 'Usuário removido com sucesso!');
 } catch (PDOException $e) {
