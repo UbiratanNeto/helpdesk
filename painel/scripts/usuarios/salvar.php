@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_once __DIR__ . '/../../../conexao.php';
 require_once __DIR__ . '/../../includes/permissoes.php';
+require_once __DIR__ . '/../../../painel/funcoes/logs.php';
 
 /**
  * Valida e salva o upload da foto em uploads/perfil/ (mesma pasta usada pelo modal de Perfil).
@@ -191,6 +192,8 @@ try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
 
+        registrarLog($pdo, 'editar', 'usuario', $id, "Usuário \"{$nome}\" atualizado");
+
         resp(true, 'Usuário atualizado com sucesso!');
     } else {
         // ===== Inserção (INSERT) — senha e foto sempre presentes aqui =====
@@ -202,6 +205,9 @@ try {
             VALUES (:nome, :email, :telefone, :ddi, :cpf, :endereco, :numero, :complemento, :bairro, :cidade, :estado, :cep, :nivel, :cargo_id, :ativo, :senha, :foto)
         ");
         $stmt->execute($params);
+        $novoId = (int) $pdo->lastInsertId();
+
+        registrarLog($pdo, 'inserir', 'usuario', $novoId, "Usuário \"{$nome}\" criado");
 
         // Envia as credenciais de acesso por WhatsApp (se houver telefone informado e uma API
         // configurada em Configurações). Não bloqueia o cadastro caso o envio falhe.

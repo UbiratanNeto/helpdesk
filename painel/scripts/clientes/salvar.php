@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_once __DIR__ . '/../../../conexao.php';
 require_once __DIR__ . '/../../includes/permissoes.php';
+require_once __DIR__ . '/../../../painel/funcoes/logs.php';
 
 /**
  * Valida e salva o upload da foto em uploads/clientes/.
@@ -154,6 +155,8 @@ try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
 
+        registrarLog($pdo, 'editar', 'cliente', $id, "Cliente \"{$nome}\" atualizado");
+
         resp(true, 'Cliente atualizado com sucesso!');
     } else {
         // ===== Inserção (INSERT) =====
@@ -165,6 +168,9 @@ try {
             VALUES (:nome, :email, :telefone, :ddi, :cpf_cnpj, :tipo, :ativo, :notificar_cadastro, :cep, :endereco, :numero, :complemento, :bairro, :cidade, :estado, :observacoes, :foto, :data_cadastro)
         ");
         $stmt->execute($params);
+        $novoId = (int) $pdo->lastInsertId();
+
+        registrarLog($pdo, 'inserir', 'cliente', $novoId, "Cliente \"{$nome}\" criado");
 
         // Envia mensagem de boas-vindas por WhatsApp, com texto gerado por IA (se houver
         // telefone informado e uma API de WhatsApp configurada). Não bloqueia o cadastro se falhar.
