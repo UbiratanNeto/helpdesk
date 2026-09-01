@@ -192,7 +192,7 @@ try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
 
-        registrarLog($pdo, 'editar', 'usuario', $id, "Usuário \"{$nome}\" atualizado");
+        registrarLog($pdo, 'editar', 'usuarios', $id, "Usuário \"{$nome}\" atualizado");
 
         resp(true, 'Usuário atualizado com sucesso!');
     } else {
@@ -207,7 +207,7 @@ try {
         $stmt->execute($params);
         $novoId = (int) $pdo->lastInsertId();
 
-        registrarLog($pdo, 'inserir', 'usuario', $novoId, "Usuário \"{$nome}\" criado");
+        registrarLog($pdo, 'inserir', 'usuarios', $novoId, "Usuário \"{$nome}\" criado");
 
         // Envia as credenciais de acesso por WhatsApp (se houver telefone informado e uma API
         // configurada em Configurações). Não bloqueia o cadastro caso o envio falhe.

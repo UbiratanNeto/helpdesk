@@ -10,6 +10,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/conexao.php';
+require_once __DIR__ . '/painel/funcoes/logs.php';
 
 // ---------- Só processa requisições via POST ----------
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -106,6 +107,8 @@ $_SESSION['email']      = $usuario['email'];
 $_SESSION['nivel']      = $usuario['nivel'];
 $_SESSION['cargo_id']   = $usuario['cargo_id'] !== null ? (int) $usuario['cargo_id'] : null;
 $_SESSION['id_empresa'] = (int) $usuario['empresa'];
+
+registrarLog($pdo, 'login', 'usuarios', (int) $usuario['id'], 'Login realizado com sucesso');
 
 // Redireciona com caminho explícito para o painel (URL amigável)
 header('Location: painel/dashboard');

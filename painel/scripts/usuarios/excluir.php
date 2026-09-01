@@ -46,7 +46,7 @@ try {
     $stmtDelete->execute([$id]);
 
     $nomeUsuario = $usuario['nome'] ?? "#{$id}";
-    registrarLog($pdo, 'excluir', 'usuario', $id, "Usuário \"{$nomeUsuario}\" excluído");
+    registrarLog($pdo, 'excluir', 'usuarios', $id, "Usuário \"{$nomeUsuario}\" excluído");
 
     resp(true, 'Usuário removido com sucesso!');
 } catch (PDOException $e) {
