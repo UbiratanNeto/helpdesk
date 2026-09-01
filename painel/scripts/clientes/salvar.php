@@ -155,7 +155,7 @@ try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
 
-        registrarLog($pdo, 'editar', 'cliente', $id, "Cliente \"{$nome}\" atualizado");
+        registrarLog($pdo, 'editar', 'clientes', $id, "Cliente \"{$nome}\" atualizado");
 
         resp(true, 'Cliente atualizado com sucesso!');
     } else {
@@ -170,7 +170,7 @@ try {
         $stmt->execute($params);
         $novoId = (int) $pdo->lastInsertId();
 
-        registrarLog($pdo, 'inserir', 'cliente', $novoId, "Cliente \"{$nome}\" criado");
+        registrarLog($pdo, 'inserir', 'clientes', $novoId, "Cliente \"{$nome}\" criado");
 
         // Envia mensagem de boas-vindas por WhatsApp, com texto gerado por IA (se houver
         // telefone informado e uma API de WhatsApp configurada). Não bloqueia o cadastro se falhar.

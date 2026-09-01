@@ -12,7 +12,7 @@
 return [
     // Ordem de exibição no menu principal — cada item é o slug de uma página solta
     // (grupo: null) ou a chave de um grupo (ex.: 'cadastros'), nunca os dois ao mesmo tempo.
-    'ordem_principal' => ['dashboard', 'cadastros', 'chamados', 'clientes', 'usuarios', 'relatorios', 'configuracoes'],
+    'ordem_principal' => ['dashboard', 'cadastros', 'chamados', 'clientes', 'usuarios', 'relatorios', 'logs', 'configuracoes'],
 
     'grupos' => [
         'cadastros' => ['label' => 'Cadastros', 'icone' => 'fa-solid fa-layer-group'],
@@ -25,6 +25,7 @@ return [
         'clientes'      => ['label' => 'Clientes',      'icone' => 'fa-solid fa-users',       'grupo' => null],
         'usuarios'      => ['label' => 'Usuários',      'icone' => 'fa-solid fa-user-gear',   'grupo' => null],
         'relatorios'    => ['label' => 'Relatórios',    'icone' => 'fa-solid fa-chart-line',  'grupo' => null],
+        'logs'          => ['label' => 'Logs',          'icone' => 'fa-solid fa-clock-rotate-left', 'grupo' => null],
         'configuracoes' => ['label' => 'Configurações', 'icone' => 'fa-solid fa-gears',       'grupo' => null],
     ],
 ];
