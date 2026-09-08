@@ -8,6 +8,14 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Registra o log de logout ANTES de limpar a sessão — depois do "$_SESSION = []" logo
+// abaixo não teríamos mais como saber quem estava logado.
+if (!empty($_SESSION['id'])) {
+    require_once __DIR__ . '/conexao.php';
+    require_once __DIR__ . '/painel/funcoes/logs.php';
+    registrarLog($pdo, 'logout', 'usuarios', (int) $_SESSION['id'], 'Logout realizado');
+}
+
 // 1. Limpa todas as variáveis de sessão em memória
 $_SESSION = [];
 

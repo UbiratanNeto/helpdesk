@@ -16,6 +16,13 @@ function montarFiltroLogs(array $get): array
     $dataInicial = trim($get['data_inicial'] ?? '');
     $dataFinal   = trim($get['data_final'] ?? '');
     $usuario     = trim($get['usuario'] ?? '');
+    $acao        = trim($get['acao'] ?? '');
+
+    // Valor fixo (ENUM da coluna) — só aceita um dos 5 conhecidos, ignora qualquer outra coisa.
+    $acoesValidas = ['login', 'logout', 'inserir', 'editar', 'excluir'];
+    if (!in_array($acao, $acoesValidas, true)) {
+        $acao = '';
+    }
 
     $dataValidaRegex = '/^\d{4}-\d{2}-\d{2}$/';
     if (!preg_match($dataValidaRegex, $dataInicial)) {
@@ -39,6 +46,10 @@ function montarFiltroLogs(array $get): array
     if ($usuario !== '') {
         $condicoes[] = 'u.nome LIKE :usuario';
         $params[':usuario'] = '%' . $usuario . '%';
+    }
+    if ($acao !== '') {
+        $condicoes[] = 'l.acao = :acao';
+        $params[':acao'] = $acao;
     }
 
     $whereSql = $condicoes ? ('WHERE ' . implode(' AND ', $condicoes)) : '';

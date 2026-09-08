@@ -50,6 +50,11 @@ if ($usuarioBusca !== '') {
 
 $acaoLabel = ['login' => 'Login', 'logout' => 'Logout', 'inserir' => 'Inserir', 'editar' => 'Editar', 'excluir' => 'Excluir'];
 
+$acaoFiltro = $_GET['acao'] ?? '';
+if ($acaoFiltro !== '' && isset($acaoLabel[$acaoFiltro])) {
+    $periodo .= ' — Ação: ' . $acaoLabel[$acaoFiltro];
+}
+
 ob_start();
 ?>
 <!DOCTYPE html>
