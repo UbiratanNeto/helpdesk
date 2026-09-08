@@ -36,6 +36,7 @@ $(function () {
     const $dataInicial = $('#filtro_data_inicial');
     const $dataFinal = $('#filtro_data_final');
     const $usuario = $('#filtro_usuario');
+    const $acao = $('#filtro_acao');
 
     const tabela = $tabela.DataTable({
         processing: true, // mostra "Processando..." (já traduzido, via language abaixo) durante o ajax
@@ -45,6 +46,7 @@ $(function () {
                 parametros.data_inicial = $dataInicial.val();
                 parametros.data_final = $dataFinal.val();
                 parametros.usuario = $usuario.val();
+                parametros.acao = $acao.val();
             },
             dataSrc: function (json) {
                 if (!json.ok) {
@@ -95,11 +97,15 @@ $(function () {
         debounceUsuario = setTimeout(function () { tabela.ajax.reload(); }, 400);
     });
 
-    // "Limpar" — esvazia data e usuário, recarrega sem filtro nenhum.
+    // Select de Ação — filtra assim que troca a opção, sem precisar de botão.
+    $acao.on('change', function () { tabela.ajax.reload(); });
+
+    // "Limpar" — esvazia data, usuário e ação, recarrega sem filtro nenhum.
     $('#btnLimparFiltro').on('click', function () {
         $dataInicial.val('');
         $dataFinal.val('');
         $usuario.val('');
+        $acao.val('');
         tabela.ajax.reload();
     });
 
@@ -148,6 +154,7 @@ $(function () {
             data_inicial: $dataInicial.val(),
             data_final: $dataFinal.val(),
             usuario: $usuario.val(),
+            acao: $acao.val(),
         });
 
         fetch('scripts/logs/relatorio.php?' + parametros.toString())

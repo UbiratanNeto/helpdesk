@@ -40,6 +40,20 @@
                 <input type="text" id="filtro_usuario" class="form-control" placeholder="Nome do funcionário...">
             </div>
             <div class="col-md-3">
+                <label class="form-label" for="filtro_acao">Ação</label>
+                <select id="filtro_acao" class="form-select">
+                    <option value="">Todas</option>
+                    <option value="login">Login</option>
+                    <option value="logout">Logout</option>
+                    <option value="inserir">Inserir</option>
+                    <option value="editar">Editar</option>
+                    <option value="excluir">Excluir</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row g-3 align-items-end" style="margin-bottom: 1.5rem;">
+            <div class="col-12">
                 <label class="form-label d-block">Atalhos</label>
                 <div class="btn-group" role="group">
                     <button type="button" class="btn btn-outline-primary btn-sm" data-atalho="hoje">Hoje</button>
