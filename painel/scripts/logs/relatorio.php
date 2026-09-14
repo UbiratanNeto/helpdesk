@@ -55,6 +55,17 @@ if ($acaoFiltro !== '' && isset($acaoLabel[$acaoFiltro])) {
     $periodo .= ' — Ação: ' . $acaoLabel[$acaoFiltro];
 }
 
+// Logo do sistema (Configurações -> Dados do Sistema), embutida como base64 — assim o
+// DomPDF não precisa de acesso a arquivo/rede habilitado pra carregar a imagem.
+$logoDataUri = null;
+if (!empty($logo)) {
+    $logoPath = __DIR__ . '/../../../uploads/' . basename($logo);
+    if (is_file($logoPath)) {
+        $mime = mime_content_type($logoPath) ?: 'image/png';
+        $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($logoPath));
+    }
+}
+
 ob_start();
 ?>
 <!DOCTYPE html>
@@ -75,11 +86,28 @@ ob_start();
     .b-editar { background: #e0a800; color: #000; }
     .b-excluir { background: #dc3545; }
     .rodape { margin-top: 16px; font-size: 9px; color: #94a3b8; }
+    .cabecalho td { border: none; padding: 0; }
 </style>
 </head>
 <body>
-    <h1>Relatório de Logs do Sistema</h1>
-    <p class="subtitulo">Período: <?php echo htmlspecialchars($periodo); ?> — Gerado em <?php echo date('d/m/Y H:i'); ?></p>
+    <table class="cabecalho">
+        <tr>
+            <?php if ($logoDataUri): ?>
+            <td style="width: 64px; vertical-align: middle;">
+                <img src="<?php echo $logoDataUri; ?>" style="max-width: 56px; max-height: 56px;">
+            </td>
+            <?php endif; ?>
+            <td style="vertical-align: middle;">
+                <div style="font-size: 13px; font-weight: bold; color: #1e293b;"><?php echo htmlspecialchars($nome_sistema ?? 'Helpdesk'); ?></div>
+                <h1 style="margin: 2px 0 0;">Relatório de Logs do Sistema</h1>
+            </td>
+            <td style="vertical-align: middle; text-align: right; font-size: 10px; color: #64748b; white-space: nowrap;">
+                Gerado em <?php echo date('d/m/Y H:i'); ?>
+            </td>
+        </tr>
+    </table>
+    <hr style="border: none; border-top: 1px solid #cbd5e1; margin: 8px 0 14px;">
+    <p class="subtitulo">Período: <?php echo htmlspecialchars($periodo); ?></p>
 
     <table>
         <thead>
