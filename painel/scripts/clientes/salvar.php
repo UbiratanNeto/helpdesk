@@ -207,9 +207,27 @@ try {
             $whatsappErro    = $resultadoWhatsapp['erro'] ?? null;
         }
 
+        // Envia a mesma mensagem de boas-vindas por e-mail (se houver e-mail informado e
+        // "Notificar cadastro?" estiver em Sim). E-mail é opcional pra cliente, diferente
+        // de usuário, por isso o gate em $email !== ''.
+        $emailEnviado = null;
+        if ($email !== '' && $notificarCadastro === 'Sim') {
+            require_once __DIR__ . '/../../funcoes/email.php';
+
+            // Reaproveita o texto já definido acima (gerado por IA ou o padrão) — se o
+            // telefone não tiver sido informado, monta aqui o texto padrão do zero.
+            $textoBoasVindas = $mensagemBoasVindas ?? "Olá, {$nome}! Seu cadastro no {$nome_sistema} foi criado com sucesso. Qualquer dúvida, estamos à disposição!";
+
+            $assuntoEmail = "Bem-vindo(a) ao {$nome_sistema}!";
+            $mensagemEmail = '<p>' . nl2br(htmlspecialchars($textoBoasVindas, ENT_QUOTES, 'UTF-8')) . '</p>';
+
+            $emailEnviado = enviarEmailGlobal($email, $assuntoEmail, $mensagemEmail);
+        }
+
         resp(true, 'Cliente cadastrado com sucesso!', [
             'whatsapp_enviado' => $whatsappEnviado,
             'whatsapp_erro'    => $whatsappErro,
+            'email_enviado'    => $emailEnviado,
         ]);
     }
 } catch (PDOException $e) {

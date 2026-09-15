@@ -209,6 +209,10 @@ try {
 
         registrarLog($pdo, 'inserir', 'usuarios', $novoId, "Usuário \"{$nome}\" criado");
 
+        // URL fixa, definida em Configurações do Sistema — não depende de qual página
+        // disparou essa requisição. Usada tanto na mensagem de WhatsApp quanto no e-mail.
+        $urlAcesso = ($url_sistema !== '' ? $url_sistema : '') . '/index.php';
+
         // Envia as credenciais de acesso por WhatsApp (se houver telefone informado e uma API
         // configurada em Configurações). Não bloqueia o cadastro caso o envio falhe.
         $whatsappEnviado = null;
@@ -220,10 +224,6 @@ try {
             if ($numeroWhatsapp !== '' && substr($numeroWhatsapp, 0, strlen($ddi)) !== $ddi) {
                 $numeroWhatsapp = $ddi . $numeroWhatsapp;
             }
-
-            // URL fixa, definida em Configurações do Sistema — não depende de qual página
-            // disparou essa requisição.
-            $urlAcesso = ($url_sistema !== '' ? $url_sistema : '') . '/index.php';
 
             $mensagemBoasVindas = "Olá, {$nome}! Sua conta no {$nome_sistema} foi criada.\n\n"
                 . "Acesso: {$urlAcesso}\n"
@@ -243,9 +243,25 @@ try {
             $whatsappErro    = $resultadoWhatsapp['erro'] ?? null;
         }
 
+        // Envia as mesmas credenciais também por e-mail — sempre roda, já que e-mail é
+        // obrigatório pra todo usuário (diferente do telefone, que é opcional).
+        require_once __DIR__ . '/../../funcoes/email.php';
+
+        $nomeSeguro = htmlspecialchars($nome, ENT_QUOTES, 'UTF-8');
+        $assuntoEmail = "Bem-vindo(a) ao {$nome_sistema}!";
+        $mensagemEmail = "<p>Olá, <strong>{$nomeSeguro}</strong>!</p>"
+            . "<p>Sua conta no <strong>" . htmlspecialchars($nome_sistema, ENT_QUOTES, 'UTF-8') . "</strong> foi criada com sucesso.</p>"
+            . "<p><strong>Acesso:</strong> <a href=\"{$urlAcesso}\">{$urlAcesso}</a><br>"
+            . "<strong>E-mail:</strong> " . htmlspecialchars($email, ENT_QUOTES, 'UTF-8') . "<br>"
+            . "<strong>Senha:</strong> " . htmlspecialchars($senha, ENT_QUOTES, 'UTF-8') . "</p>"
+            . "<p>Recomendamos alterar sua senha no primeiro acesso.</p>";
+
+        $emailEnviado = enviarEmailGlobal($email, $assuntoEmail, $mensagemEmail);
+
         resp(true, 'Usuário cadastrado com sucesso!', [
             'whatsapp_enviado' => $whatsappEnviado,
             'whatsapp_erro'    => $whatsappErro,
+            'email_enviado'    => $emailEnviado,
         ]);
     }
 } catch (PDOException $e) {
