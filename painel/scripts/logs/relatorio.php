@@ -2,7 +2,9 @@
 /**
  * painel/scripts/logs/relatorio.php
  * Gera o relatório de Logs em PDF (DomPDF), respeitando o mesmo filtro de data da tela
- * (painel/scripts/logs/filtro.php, compartilhado com listar.php).
+ * (painel/scripts/logs/filtro.php, compartilhado com listar.php). Cabeçalho, CSS base e
+ * configuração do PDF vêm de painel/funcoes/relatorio_pdf.php, compartilhado com os
+ * outros relatórios (Clientes, ...).
  */
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -15,10 +17,7 @@ if (empty($_SESSION['id'])) {
 
 require_once __DIR__ . '/../../../conexao.php';
 require_once __DIR__ . '/filtro.php';
-require_once __DIR__ . '/../../../vendor/autoload.php';
-
-use Dompdf\Dompdf;
-use Dompdf\Options;
+require_once __DIR__ . '/../../funcoes/relatorio_pdf.php';
 
 [$whereSql, $params] = montarFiltroLogs($_GET);
 
@@ -32,17 +31,17 @@ $stmt = $pdo->prepare("
 $stmt->execute($params);
 $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$dataInicial = $_GET['data_inicial'] ?? '';
-$dataFinal   = $_GET['data_final'] ?? '';
+$dataInicial  = $_GET['data_inicial'] ?? '';
+$dataFinal    = $_GET['data_final'] ?? '';
 $usuarioBusca = trim($_GET['usuario'] ?? '');
 
 $periodo = ($dataInicial !== '' || $dataFinal !== '')
     ? sprintf(
-        '%s até %s',
+        'Período: %s até %s',
         $dataInicial !== '' ? date('d/m/Y', strtotime($dataInicial)) : 'início',
         $dataFinal !== '' ? date('d/m/Y', strtotime($dataFinal)) : 'hoje'
     )
-    : 'Todos os registros';
+    : 'Período: Todos os registros';
 
 if ($usuarioBusca !== '') {
     $periodo .= ' — Usuário: "' . $usuarioBusca . '"';
@@ -55,16 +54,15 @@ if ($acaoFiltro !== '' && isset($acaoLabel[$acaoFiltro])) {
     $periodo .= ' — Ação: ' . $acaoLabel[$acaoFiltro];
 }
 
-// Logo do sistema (Configurações -> Dados do Sistema), embutida como base64 — assim o
-// DomPDF não precisa de acesso a arquivo/rede habilitado pra carregar a imagem.
-$logoDataUri = null;
-if (!empty($logo)) {
-    $logoPath = __DIR__ . '/../../../uploads/' . basename($logo);
-    if (is_file($logoPath)) {
-        $mime = mime_content_type($logoPath) ?: 'image/png';
-        $logoDataUri = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($logoPath));
-    }
-}
+$cabecalho = cabecalhoRelatorio(
+    'Relatório de Logs do Sistema',
+    $nome_sistema ?? null,
+    $logo ?? null,
+    $telefone_sistema ?? null,
+    $email_sistema ?? null,
+    $endereco ?? null,
+    $periodo
+);
 
 ob_start();
 ?>
@@ -73,41 +71,16 @@ ob_start();
 <head>
 <meta charset="UTF-8">
 <style>
-    body { font-family: Arial, sans-serif; font-size: 11px; color: #1e293b; }
-    h1 { font-size: 16px; margin-bottom: 2px; }
-    .subtitulo { color: #64748b; margin-bottom: 16px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #cbd5e1; padding: 5px 7px; text-align: left; }
-    th { background: #f1f5f9; }
-    .badge { padding: 2px 6px; border-radius: 4px; color: #fff; font-size: 10px; }
+    <?php echo estiloBaseRelatorio(); ?>
     .b-login { background: #0d6efd; }
     .b-logout { background: #6c757d; }
     .b-inserir { background: #198754; }
     .b-editar { background: #e0a800; color: #000; }
     .b-excluir { background: #dc3545; }
-    .rodape { margin-top: 16px; font-size: 9px; color: #94a3b8; }
-    .cabecalho td { border: none; padding: 0; }
 </style>
 </head>
 <body>
-    <table class="cabecalho">
-        <tr>
-            <?php if ($logoDataUri): ?>
-            <td style="width: 64px; vertical-align: middle;">
-                <img src="<?php echo $logoDataUri; ?>" style="max-width: 56px; max-height: 56px;">
-            </td>
-            <?php endif; ?>
-            <td style="vertical-align: middle;">
-                <div style="font-size: 13px; font-weight: bold; color: #1e293b;"><?php echo htmlspecialchars($nome_sistema ?? 'Helpdesk'); ?></div>
-                <h1 style="margin: 2px 0 0;">Relatório de Logs do Sistema</h1>
-            </td>
-            <td style="vertical-align: middle; text-align: right; font-size: 10px; color: #64748b; white-space: nowrap;">
-                Gerado em <?php echo date('d/m/Y H:i'); ?>
-            </td>
-        </tr>
-    </table>
-    <hr style="border: none; border-top: 1px solid #cbd5e1; margin: 8px 0 14px;">
-    <p class="subtitulo">Período: <?php echo htmlspecialchars($periodo); ?></p>
+    <?php echo $cabecalho; ?>
 
     <table>
         <thead>
@@ -142,19 +115,7 @@ ob_start();
 <?php
 $html = ob_get_clean();
 
-$options = new Options();
-$options->set('isRemoteEnabled', false);
-$options->set('defaultFont', 'Arial');
-
-$dompdf = new Dompdf($options);
-$dompdf->loadHtml($html);
-$dompdf->setPaper('A4', 'landscape');
-$dompdf->render();
-
-// Numeração de página (ex.: "Página 1 de 3") em todas as páginas do PDF — {PAGE_NUM}/{PAGE_COUNT}
-// são placeholders do próprio DomPDF, substituídos depois que ele já sabe quantas páginas existem.
-$canvas = $dompdf->getCanvas();
-$canvas->page_text(770, 570, 'Página {PAGE_NUM} de {PAGE_COUNT}', null, 8, [0.58, 0.64, 0.72]);
+$dompdf = criarDompdfRelatorio($html, 'landscape');
 
 // Attachment=false -> abre no visualizador de PDF do próprio navegador (aba nova),
 // em vez de forçar um download direto.

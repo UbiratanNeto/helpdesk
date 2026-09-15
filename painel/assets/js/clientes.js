@@ -15,6 +15,43 @@ $(function () {
     const $tabela = $('#tabelaClientes');
     if ($tabela.length === 0) return; // Este script só faz sentido na página de Clientes
 
+    // "Relatório" — mesmo padrão do logs.js: abre a aba já no clique (senão o navegador
+    // bloqueia como pop-up depois do fetch responder) e só troca o conteúdo quando o PDF terminar.
+    $('#btnRelatorioClientes').on('click', function () {
+        const botao = this;
+        const textoOriginal = botao.innerHTML;
+
+        const novaAba = window.open('', '_blank');
+        if (novaAba) {
+            novaAba.document.write('<p style="font-family:sans-serif;padding:2rem;color:#64748b;">Gerando relatório...</p>');
+        }
+
+        botao.disabled = true;
+        botao.innerHTML = '<span class="spinner-border spinner-border-sm" style="margin-right:0.4rem;"></span>Gerando...';
+
+        fetch('scripts/clientes/relatorio.php')
+            .then(function (resposta) {
+                if (!resposta.ok) throw new Error('Falha ao gerar o PDF.');
+                return resposta.blob();
+            })
+            .then(function (blob) {
+                const url = URL.createObjectURL(blob);
+                if (novaAba) {
+                    novaAba.location.href = url;
+                } else {
+                    window.open(url, '_blank');
+                }
+            })
+            .catch(function () {
+                if (novaAba) novaAba.close();
+                Mensagens.erro('Erro', 'Não foi possível gerar o relatório agora.');
+            })
+            .finally(function () {
+                botao.disabled = false;
+                botao.innerHTML = textoOriginal;
+            });
+    });
+
     tabela = $tabela.DataTable({
         ajax: {
             url: 'scripts/clientes/listar.php',
