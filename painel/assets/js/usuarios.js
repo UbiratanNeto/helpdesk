@@ -393,12 +393,27 @@ function salvar(form) {
                 bootstrap.Modal.getOrCreateInstance('#modalUsuario').hide();
                 tabela.ajax.reload(null, false);
 
+                let detalhes = '';
+                let falhouAlgo = false;
+
                 if (dados.whatsapp_enviado === true) {
-                    Mensagens.sucesso('Sucesso!', dados.msg + ' Mensagem de boas-vindas enviada por WhatsApp.');
+                    detalhes += ' Mensagem de boas-vindas enviada por WhatsApp.';
                 } else if (dados.whatsapp_enviado === false) {
-                    Mensagens.aviso('Usuário salvo, mas...', dados.msg + ' Não foi possível enviar o WhatsApp: ' + (dados.whatsapp_erro || 'motivo desconhecido') + '.');
+                    detalhes += ' Não foi possível enviar o WhatsApp: ' + (dados.whatsapp_erro || 'motivo desconhecido') + '.';
+                    falhouAlgo = true;
+                }
+
+                if (dados.email_enviado === true) {
+                    detalhes += ' E-mail de boas-vindas enviado.';
+                } else if (dados.email_enviado === false) {
+                    detalhes += ' Não foi possível enviar o e-mail de boas-vindas.';
+                    falhouAlgo = true;
+                }
+
+                if (falhouAlgo) {
+                    Mensagens.aviso('Usuário salvo, mas...', dados.msg + detalhes);
                 } else {
-                    Mensagens.sucesso('Sucesso!', dados.msg);
+                    Mensagens.sucesso('Sucesso!', dados.msg + detalhes);
                 }
             } else {
                 Mensagens.erro('Atenção', dados.msg);
