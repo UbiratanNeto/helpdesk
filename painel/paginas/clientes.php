@@ -15,11 +15,16 @@
             <i class="fa-solid fa-users" style="color: var(--cor-primaria); margin-right: 0.5rem;"></i>
             Clientes
         </h2>
-        <?php if (podeExecutarAcao($pdo, $_SESSION['id'] ?? null, $_SESSION['cargo_id'] ?? null, 'criar')): ?>
-        <button type="button" class="hd-btn hd-btn--primary hd-btn--sm" onclick="novo()">
-            <i class="fa-solid fa-plus" style="margin-right: 0.4rem;"></i>Novo Cliente
-        </button>
-        <?php endif; ?>
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="button" id="btnRelatorioClientes" class="hd-btn hd-btn--ghost hd-btn--sm">
+                <i class="fa-solid fa-file-pdf" style="margin-right: 0.4rem;"></i>Relatório
+            </button>
+            <?php if (podeExecutarAcao($pdo, $_SESSION['id'] ?? null, $_SESSION['cargo_id'] ?? null, 'criar')): ?>
+            <button type="button" class="hd-btn hd-btn--primary hd-btn--sm" onclick="novo()">
+                <i class="fa-solid fa-plus" style="margin-right: 0.4rem;"></i>Novo Cliente
+            </button>
+            <?php endif; ?>
+        </div>
     </div>
     <div class="hd-card__body">
         <div class="table-responsive">
