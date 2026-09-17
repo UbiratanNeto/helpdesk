@@ -11,21 +11,26 @@
 
 <div class="hd-card">
     <div class="hd-card__header hd-card__header--row">
-        <h2 class="hd-card__title" style="font-size: 1.15rem;">
-            <i class="fa-solid fa-users" style="color: var(--cor-primaria); margin-right: 0.5rem;"></i>
-            Clientes
-        </h2>
         <div style="display: flex; gap: 0.5rem;">
-            <button type="button" id="btnRelatorioClientes" class="hd-btn hd-btn--ghost hd-btn--sm">
-                <i class="fa-solid fa-file-pdf" style="margin-right: 0.4rem;"></i>Relatório
-            </button>
             <?php if (podeExecutarAcao($pdo, $_SESSION['id'] ?? null, $_SESSION['cargo_id'] ?? null, 'criar')): ?>
             <button type="button" class="hd-btn hd-btn--primary hd-btn--sm" onclick="novo()">
                 <i class="fa-solid fa-plus" style="margin-right: 0.4rem;"></i>Novo Cliente
             </button>
             <?php endif; ?>
         </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="button" id="btnImportarClientes" class="hd-btn hd-btn--ghost hd-btn--sm">
+                <i class="fa-solid fa-file-import" style="margin-right: 0.4rem;"></i>Importar
+            </button>
+            <button type="button" id="btnExportarClientes" class="hd-btn hd-btn--ghost hd-btn--sm">
+                <i class="fa-solid fa-file-excel" style="margin-right: 0.4rem;"></i>Exportar
+            </button>
+            <button type="button" id="btnRelatorioClientes" class="hd-btn hd-btn--ghost hd-btn--sm">
+                <i class="fa-solid fa-file-pdf" style="margin-right: 0.4rem;"></i>Relatório
+            </button>
+        </div>
     </div>
+    <input type="file" id="inputImportarClientes" accept=".xlsx" style="display: none;">
     <div class="hd-card__body">
         <div class="table-responsive">
             <table id="tabelaClientes" class="table table-striped table-hover align-middle" style="width: 100%;">
