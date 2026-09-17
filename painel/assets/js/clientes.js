@@ -15,6 +15,54 @@ $(function () {
     const $tabela = $('#tabelaClientes');
     if ($tabela.length === 0) return; // Este script só faz sentido na página de Clientes
 
+    // "Exportar" — o próprio navegador já baixa (Content-Disposition: attachment no PHP),
+    // não precisa de fetch/blob feito à mão como no Relatório/Importar.
+    $('#btnExportarClientes').on('click', function () {
+        window.open('scripts/clientes/exportar.php', '_blank');
+    });
+
+    // "Importar" — clique no botão só abre o seletor de arquivo escondido.
+    $('#btnImportarClientes').on('click', function () {
+        $('#inputImportarClientes').trigger('click');
+    });
+
+    $('#inputImportarClientes').on('change', function () {
+        const $input = $(this);
+        const arquivo = this.files[0];
+        if (!arquivo) return;
+
+        const botao = document.getElementById('btnImportarClientes');
+        const textoOriginal = botao.innerHTML;
+        botao.disabled = true;
+        botao.innerHTML = '<span class="spinner-border spinner-border-sm" style="margin-right:0.4rem;"></span>Importando...';
+
+        const formData = new FormData();
+        formData.append('arquivo', arquivo);
+
+        fetch('scripts/clientes/importar.php', { method: 'POST', body: formData })
+            .then(function (resposta) { return resposta.json(); })
+            .then(function (dados) {
+                if (!dados.ok) {
+                    Mensagens.erro('Erro', dados.msg);
+                    return;
+                }
+                tabela.ajax.reload(null, false);
+                if (dados.ignorados > 0) {
+                    Mensagens.aviso('Importação concluída', dados.msg + (dados.erros.length ? '\n\n' + dados.erros.join('\n') : ''));
+                } else {
+                    Mensagens.sucesso('Sucesso!', dados.msg);
+                }
+            })
+            .catch(function () {
+                Mensagens.erro('Erro de conexão', 'Não foi possível importar agora. Tente novamente.');
+            })
+            .finally(function () {
+                botao.disabled = false;
+                botao.innerHTML = textoOriginal;
+                $input.val(''); // permite reimportar o mesmo arquivo depois, se precisar
+            });
+    });
+
     // "Relatório" — mesmo padrão do logs.js: abre a aba já no clique (senão o navegador
     // bloqueia como pop-up depois do fetch responder) e só troca o conteúdo quando o PDF terminar.
     $('#btnRelatorioClientes').on('click', function () {
