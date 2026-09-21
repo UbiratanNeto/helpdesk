@@ -1012,6 +1012,13 @@ body {
     align-items: end;
 }
 
+/* Variante "larga" — mais colunas por linha, se ajustando sozinha (auto-fit) conforme
+   o espaço disponível. Usada em modais mais horizontais (ex.: Editar Perfil), sem
+   alterar o .hd-form-grid padrão de 2 colunas usado nos demais modais. */
+.hd-form-grid--wide {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
 .hd-form-section-title {
     grid-column: 1 / -1;
     font-size: 0.8rem;

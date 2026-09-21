@@ -110,6 +110,43 @@ function cabecalhoRelatorio(
 }
 
 /**
+ * Bloco de assinatura no fim do relatório: imagem + linha + nome de quem está logado
+ * (quem gerou o relatório), centralizado na página. A assinatura vem de usuarios.assinatura
+ * (Editar Perfil -> Fazer assinatura), embutida em base64 como a logo. Se o usuário ainda não
+ * assinou, sai só uma linha em branco com o nome, pra dar pra assinar à mão depois de impresso.
+ */
+function blocoAssinaturaRelatorio(PDO $pdo): string
+{
+    $stmt = $pdo->prepare("SELECT nome, assinatura FROM usuarios WHERE id = ?");
+    $stmt->execute([(int) ($_SESSION['id'] ?? 0)]);
+    $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$usuario) {
+        return '';
+    }
+
+    $nomeSeguro = htmlspecialchars($usuario['nome'], ENT_QUOTES, 'UTF-8');
+
+    $imagemHtml = '<div style="height: 80px;"></div>';
+    if (!empty($usuario['assinatura'])) {
+        $caminho = __DIR__ . '/../../uploads/assinaturas/' . basename($usuario['assinatura']);
+        if (is_file($caminho)) {
+            $mime = mime_content_type($caminho) ?: 'image/png';
+            $dataUri = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($caminho));
+            $imagemHtml = '<img src="' . $dataUri . '" style="display: block; width: 220px; height: 80px;">';
+        }
+    }
+
+    return <<<HTML
+        <div style="margin-top: 36px; text-align: center; page-break-inside: avoid;">
+            <div style="display: inline-block; width: 220px; text-align: center;">
+                {$imagemHtml}
+                <div style="font-size: 11px; font-weight: bold; padding-top: 4px; border-top: 1px solid #000;">{$nomeSeguro}</div>
+            </div>
+        </div>
+        HTML;
+}
+
+/**
  * Instancia o Dompdf já configurado do jeito padrão do projeto (sem acesso remoto,
  * fonte Arial) e adiciona a numeração de página ("Página X de Y") depois de renderizar.
  * A posição do rodapé se ajusta ao tamanho real da página, então funciona tanto em
