@@ -110,6 +110,8 @@ ob_start();
     </table>
 
     <p class="rodape">Total de registros: <?php echo count($logs); ?></p>
+
+    <?php echo blocoAssinaturaRelatorio($pdo); ?>
 </body>
 </html>
 <?php
